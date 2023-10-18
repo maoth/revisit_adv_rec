@@ -108,23 +108,26 @@ class BaseTrainer(object):
         target_items_position = np.zeros([n_rows, len(target_items)], dtype=np.int64)
 
         recommendations = self.recommend(train_data, top_k=100)
-        np.random.seed(int(time.time()))
-        round1_items_amount=np.random.randint(6)
-        random_id=np.arange(20)
-        np.random.seed(int(time.time()))
-        np.random.shuffle(random_id)
-        random_id=random_id[:round1_items_amount]
-        print(random_id)
-        top_1=recommendations[random_id]
-        #top_1 = self.recommend(train_data, top_k=1)
-        top_1 = [a[0] for a in top_1]
+        new_train_data=train_data
+        for i in range(n_rows):
+            np.random.seed(int(time.time()))
+            round1_items_amount=np.random.randint(6)
+            random_id=np.arange(20)
+            np.random.seed(int(time.time()))
+            np.random.shuffle(random_id)
+            random_id=random_id[:round1_items_amount]
+            print(random_id)
+            top_1=recommendations[random_id]
+            #top_1 = self.recommend(train_data, top_k=1)
+            top_1 = [a[0] for a in top_1]
 
-        rows = np.array(range(len(top_1)))
-        cols = np.array(top_1)
-        data = np.ones_like(rows)
+            rows = np.full(len(top_1),i)
+            cols = np.array(top_1)
+            data = np.ones_like(rows)
+            print(rows,cols,data)
 
-        B = coo_matrix((data, (rows, cols)), shape=train_data.shape)
-        new_train_data = train_data + B.tocsr()
+            B = coo_matrix((data, (rows, cols)), shape=train_data.shape)
+            new_train_data = new_train_data + B.tocsr()
 
         # print(train_data.nnz)
         # print(new_train_data.nnz)
