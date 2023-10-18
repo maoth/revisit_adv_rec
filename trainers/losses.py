@@ -22,7 +22,6 @@ def mult_ce_loss(data, logits):
     """Multi-class cross-entropy loss."""
     log_probs = F.log_softmax(logits, dim=-1)
     loss = -log_probs * data
-
     instance_data = data.sum(1)
     instance_loss = loss.sum(1)
     # Avoid divide by zeros.

@@ -23,7 +23,7 @@ class BlackBoxAdvTrainer:
         self.n_fakes = args.n_fakes if args.n_fakes > 1 else int(n_users * args.n_fakes)
 
         self.target_items = args.target_items
-        self.golden_metric = "TargetHR@50"
+        self.golden_metric = "TargetHR@20"  #TargetHR@50 original !!!!
 
     def __repr__(self):
         return ("Random" if self.args.attack_type == "random"
@@ -144,6 +144,7 @@ class BlackBoxAdvTrainer:
 
         elif self.args.attack_type == "adversarial":
             best_fake_data, best_perf = None, 0.0
+            last_perf=0.0
             cur_fake_tensor = self.fake_tensor.detach().clone()
             for epoch_num in range(1, self.args.adv_epochs + 1):
                 # Update fake data with adversarial gradients.
@@ -160,28 +161,30 @@ class BlackBoxAdvTrainer:
 
                 # Save fake data if it has larger impact.
                 cur_perf = result[self.golden_metric]
+                last_perf=cur_perf
                 if cur_perf > best_perf:
                     print("Having better fake data with performance "
                           "{}={:.4f}".format(self.golden_metric, cur_perf))
                     fake_data_path = os.path.join(
                         self.args.output_dir,
-                        "_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S")]))
+                        "_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S"),self.args.tag]))
                     save_fake_data(cur_fake_data, path=fake_data_path)
                     best_fake_data, best_perf = cur_fake_data, cur_perf
 
                 self.fake_tensor.data = new_fake_tensor.detach().clone()
                 cur_fake_tensor = new_fake_tensor.detach().clone()
+            print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
 
         # Save processed fake data.
         fake_data_path = os.path.join(
             self.args.output_dir,
-            "_".join([str(self), "fake_data", "best"]))
+            "_".join([str(self), "fake_data", "best",self.args.tag]))
         save_fake_data(best_fake_data, path=fake_data_path)
 
     def init_fake_data(self, train_data):
         """Initialize fake data by random sampling from normal data."""
         train_data = train_data.toarray()
-        max_allowed_click = 100
+        max_allowed_click = 20   #original 100 !!!!!
         user_clicks = train_data.sum(1)
         qual_users = np.where(user_clicks <= max_allowed_click)[0]
 

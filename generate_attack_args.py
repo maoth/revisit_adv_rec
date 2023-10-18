@@ -4,8 +4,8 @@ from metrics.ranking_metrics import *
 from trainers import *
 from trainers.losses import *
 
-data_path = "./data/gowalla"  # # Dataset path and loader
-use_cuda = False  # If using GPU or CPU
+data_path = "./data/ml-1m"  # # Dataset path and loader
+use_cuda = True  # If using GPU or CPU
 seed = 1  # Random seed
 metrics = [PrecisionRecall(k=[50]), NormalizedDCG(k=[50])]
 
@@ -66,13 +66,14 @@ sur_wmf_als = {
 }
 
 """ Attack generation hyper-parameters for all methods, tuned with grid-search."""
+#original trainer_class adversarial, using to test randfilter
 attack_gen_args_item_ae_pd = {
     **shared_params,
     "trainer_class": BlackBoxAdvTrainer,
-    "attack_type": "adversarial",
-    "n_target_items": 5,
+    "attack_type": "random",
+    "n_target_items": 1,
     "target_item_popularity": "head",
-    "use_fixed_target_item": True,
+    "use_fixed_target_item": False,
 
     # Args for adversarial training.
     "n_fakes": 0.01,
@@ -112,13 +113,15 @@ attack_gen_args_item_ae = {
     "surrogate": sur_item_ae
 }
 
+#original unroll_steps=10, occurs CUDA out of memory
+#original use_fixed=True
 attack_gen_args_wmf_sgd = {
     **shared_params,
     "trainer_class": BlackBoxAdvTrainer,
     "attack_type": "adversarial",
-    "n_target_items": 5,
+    "n_target_items": 1,
     "target_item_popularity": "head",
-    "use_fixed_target_item": True,
+    "use_fixed_target_item": False,
 
     # Args for adversarial training.
     "n_fakes": 0.01,
@@ -139,9 +142,9 @@ attack_gen_args_wmf_als = {
     **shared_params,
     "trainer_class": BlackBoxAdvTrainer,
     "attack_type": "adversarial",
-    "n_target_items": 5,
+    "n_target_items": 1,
     "target_item_popularity": "head",
-    "use_fixed_target_item": True,
+    "use_fixed_target_item": False,
 
     # Args for adversarial training.
     "n_fakes": 0.01,
@@ -157,7 +160,10 @@ attack_gen_args_wmf_als = {
     # Args for surrogate model.
     "surrogate": sur_wmf_als
 }
-
 # Using the best attacking method (wmf_sgd). Note this method will requires ~25GB RAM
 # since it needs more unroll steps.
-attack_gen_args = attack_gen_args_wmf_sgd
+
+attack_gen_args_wrmf_sgd = attack_gen_args_wmf_sgd
+attack_gen_args_wrmf_als = attack_gen_args_wmf_als
+attack_gen_args_randfilter = attack_gen_args_item_ae_pd
+attack_gen_args = attack_gen_args_item_ae_pd

@@ -1,5 +1,5 @@
 import time
-
+import os
 import numpy as np
 import torch
 import torch.nn as nn
@@ -198,6 +198,7 @@ class WMFTrainer(BaseTrainer):
         batch_size = (self.args.batch_size
                       if self.args.batch_size > 0 else len(idx_list))
         for i in range(1, epoch_num - unroll_steps + 1):
+            torch.cuda.empty_cache()
             t1 = time.time()
             np.random.shuffle(idx_list)
             model.train()
@@ -219,6 +220,7 @@ class WMFTrainer(BaseTrainer):
         with higher.innerloop_ctx(model, optimizer) as (fmodel, diffopt):
             print("Switching to higher mode...")
             for i in range(epoch_num - unroll_steps + 1, epoch_num + 1):
+                torch.cuda.empty_cache()
                 t1 = time.time()
                 np.random.shuffle(idx_list)
                 fmodel.train()
@@ -231,20 +233,25 @@ class WMFTrainer(BaseTrainer):
                                     weight=self.weight_alpha).sum()
                     epoch_loss += loss.item()
                     diffopt.step(loss)
+                    torch.cuda.empty_cache()
 
                 print("Training (higher mode) [{:.1f} s],"
                       " epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
+                torch.cuda.empty_cache()
 
+            torch.cuda.empty_cache()
             print("Finished surrogate model training,"
                   " {} copies of surrogate model params.".format(len(fmodel._fast_params)))
-
+            torch.cuda.empty_cache()
             fmodel.eval()
             predictions = fmodel()
             # Compute adversarial (outer) loss.
             adv_loss = mult_ce_loss(
                 logits=predictions[:-n_fakes, ],
                 data=target_tensor[:-n_fakes, ]).sum()
-            adv_grads = torch.autograd.grad(adv_loss, data_tensor)[0]
+         
+            adv_grads = torch.autograd.grad(adv_loss,data_tensor)[0]
+
             # Copy fmodel's parameters to default trainer.net().
             model.load_state_dict(fmodel.state_dict())
 
@@ -311,7 +318,6 @@ class WMFTrainer(BaseTrainer):
         # Set model to eval mode
         model = self.net.to(self.device)
         model.eval()
-
         n_rows = data.shape[0]
         idx_list = np.arange(n_rows)
         recommendations = np.empty([n_rows, top_k], dtype=np.int64)

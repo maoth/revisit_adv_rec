@@ -14,7 +14,7 @@ _fixed_target_items = {
 }
 
 
-def sample_target_items(train_data, n_samples, popularity, use_fix=False, output_dir=None):
+def sample_target_items(train_data, n_samples, popularity, use_fix=False, output_dir=None,tag=None):
     """Sample target items with certain popularity."""
     if popularity not in ["head", "upper_torso", "lower_torso", "tail"]:
         raise ValueError("Unknown popularity type {}.".format(popularity))
@@ -47,7 +47,7 @@ def sample_target_items(train_data, n_samples, popularity, use_fix=False, output
     sampled_items.sort()
     print("Sampled target items: {}".format(sampled_items.tolist()))
     if output_dir is not None:
-        file_name = "sampled_target_items_%s_%s" % (n_samples, popularity)
+        file_name = "sampled_target_items_%s_%s_%s" % (n_samples, popularity,tag)
         file_path = "%s.npz" % os.path.join(output_dir, file_name)
         print("Saving fake data to {}".format(file_path))
         np.savez(file_path, target_items=sampled_items)
@@ -146,7 +146,7 @@ def save_checkpoint(model, optimizer, path, epoch=-1):
 def load_checkpoint(path):
     """Load model checkpoint and optimizer state from file."""
     file_path = "%s.pt" % path
-    state = torch.load(file_path, map_location=torch.device('cpu'))
+    state = torch.load(file_path, map_location=torch.device('cuda'))
     print("Loaded checkpoint from {} (epoch {})".format(
         file_path, state["epoch"]))
     return state["epoch"], state["state_dict"], state["optimizer"]

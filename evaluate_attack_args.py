@@ -116,10 +116,12 @@ attack_eval_args = {
 
     # Path to the fake data.
     # If None, then evaluate clean performance without attack.
-    "fake_data_path": "./outputs/Sur-WeightedMF-sgd_fake_data_best.npz",
+    #"fake_data_path": "./outputs/",
+    "fake_data_path": None,
     # Path to the target items.
-    "target_items_path": "./outputs/sampled_target_items_5_head.npz",
+    "target_items_path": "./outputs/sampled_target_items_1_",
 
     # List of victim models to evaluate.
-    "victims": [vict_itemcf, vict_wmf_sgd, vict_item_ae]
+    "victims": [vict_wmf_sgd]
 }
+#"victims": [vict_itemcf, vict_cml, vict_ncf, vict_user_ae, vict_wmf_sgd, vict_item_ae]

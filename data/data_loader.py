@@ -22,10 +22,10 @@ class DataLoader(object):
 
       tp = pd.read_csv(path)
       rows, cols = tp['uid'], tp['sid']
-
       self.train_data = sparse.csr_matrix(
         (np.ones_like(rows), (rows, cols)), dtype='float64',
         shape=(self.n_users, self.n_items))
+
     return self.train_data
 
   def load_test_data(self):

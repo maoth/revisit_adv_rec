@@ -139,7 +139,7 @@ class NCFTrainer(BaseTrainer):
 
     def _initialize(self):
         model_args = Bunch(self.args.model)
-        if model_args.model_type == "NeuralCF":
+        if model_args.model_name == "NeuralCF":
             if not hasattr(model_args, "n_negatives"):
                 model_args.n_negatives = 5
             self._n_negatives = model_args.n_negatives
@@ -149,7 +149,7 @@ class NCFTrainer(BaseTrainer):
             self.net = NeuralCF(
                 n_users=self.n_users, n_items=self.n_items,
                 model_args=model_args).to(self.device)
-        elif model_args.model_type == "CML":
+        elif model_args.model_name == "CML":
             if not hasattr(model_args, "n_negatives"):
                 model_args.n_negatives = 10
             if not hasattr(model_args, "hinge_margin"):
