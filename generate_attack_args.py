@@ -65,6 +65,23 @@ sur_wmf_als = {
     }
 }
 
+sur_wmf_dqn = {
+    **shared_params,
+    "epochs": 10,
+    "lr": 1e-3,
+    "l2": 5e-2,
+    "save_feq": 10,
+    "batch_size": 32,
+    "valid_batch_size": 512,
+    "model": {
+        "trainer_class": WMFTrainer,
+        "model_name": "Sur-WeightedMF-sgd",
+        "hidden_dims": [128],
+        "weight_alpha": 20,
+        "optim_method": "sgd"
+    }
+}
+
 """ Attack generation hyper-parameters for all methods, tuned with grid-search."""
 #original trainer_class adversarial, using to test randfilter
 attack_gen_args_item_ae_pd = {
@@ -163,7 +180,32 @@ attack_gen_args_wmf_als = {
 # Using the best attacking method (wmf_sgd). Note this method will requires ~25GB RAM
 # since it needs more unroll steps.
 
+attack_gen_args_dqn_sgd = {
+    **shared_params,
+    "trainer_class": BlackBoxAdvTrainer,
+    "attack_type": "adversarial",
+    "n_target_items": 1,
+    "target_item_popularity": "head",
+    "use_fixed_target_item": False,
+
+    # Args for adversarial training.
+    "n_fakes": 0.01,
+    "adv_epochs": 30,
+    "unroll_steps": 0,
+
+    "adv_lr": 1.0,
+    "adv_momentum": 0.95,
+
+    "proj_threshold": 0.1,
+    "click_targets": True,
+    "clusters": 3,
+
+    # Args for surrogate model.
+    "surrogate": sur_wmf_dqn
+}
+
 attack_gen_args_wrmf_sgd = attack_gen_args_wmf_sgd
 attack_gen_args_wrmf_als = attack_gen_args_wmf_als
 attack_gen_args_randfilter = attack_gen_args_item_ae_pd
+attack_gen_args_dqn=attack_gen_args_dqn_sgd
 attack_gen_args = attack_gen_args_item_ae_pd

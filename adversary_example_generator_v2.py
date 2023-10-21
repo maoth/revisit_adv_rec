@@ -32,11 +32,12 @@ class DQNAgent:
         self.epsilon = epsilon
         self.gamma = gamma
         self.batch_size = batch_size
+        self.num_actions=num_actions
         self.replay_memory = []
 
     def select_action(self, state):
         if random.random() < self.epsilon:
-            return random.randint(0, num_actions - 1)
+            return random.randint(0, self.num_actions - 1)
         else:
             state = torch.tensor(state, dtype=torch.long).to(self.device)
             q_values = self.dqn(state)
@@ -63,18 +64,9 @@ class DQNAgent:
 
             loss = torch.nn.MSELoss()(q_values, target_q_values)
             loss.backward()
-            self.optimizer.step()
-            
-state_dim = 10  # Example state dimension
-num_actions = 5  # Example number of actions
-embedding_dim = 32
-hidden_dim = 64
-learning_rate = 0.001
-epsilon = 0.1
-gamma = 0.9
-batch_size = 32
+            self.optimizer.step()            
 
-def adversary_pattern_generator(model,train_data,target_item,target_user):
+def adversary_pattern_generator(model,train_data,target_item,target_user,args):
     mid_result_recommender=model
     dataset=train_data
     item_amounts=dataset.shape[1]
@@ -99,7 +91,7 @@ def adversary_pattern_generator(model,train_data,target_item,target_user):
     c1_item_feature_vectors=mat_H[c1,:]
     c2_item_feature_vectors=mat_H[c2,:]  
     
-    c = 3
+    c = args.clusters
     kmeans = KMeans(n_clusters=c, random_state=0)
     kmeans.fit(item_feature_vectors)
     cluster_labels = kmeans.labels_
@@ -122,11 +114,18 @@ def adversary_pattern_generator(model,train_data,target_item,target_user):
     clusters.append(c2_items)
    
     num_actions=c+2
+    state_dim = 10  # Example state dimension
+    embedding_dim = 32
+    hidden_dim = 64
+    #learning_rate = 0.001
+    epsilon = 0.1
+    gamma = 0.9
+    #batch_size = 32
 
-    agent = DQNAgent(num_actions, embedding_dim, hidden_dim, learning_rate, epsilon, gamma, batch_size)
+    agent = DQNAgent(num_actions=num_actions, embedding_dim=embedding_dim, hidden_dim=hidden_dim, learning_rate=args.surrogate["lr"], epsilon=epsilon, gamma=gamma, batch_size=args.surrogate["batch_size"])
 
     # Training process
-    num_iterations = 100  # Number of training iterations
+    num_iterations = args.adv_epochs  # Number of training iterations
     #current_state = []  # Define an initial state as an empty list
     current_state=np.zeros(1)
     current_state=current_state.reshape(1,current_state.size)

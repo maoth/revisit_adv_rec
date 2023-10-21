@@ -6,6 +6,7 @@ from bunch import Bunch
 
 from data.data_loader import DataLoader
 from utils.utils import set_seed, sample_target_items
+from framework import DQN_attack
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config_file", type=str, default="generate_attack_args")
@@ -29,6 +30,8 @@ def main(args,config):
         args.attack_gen_args=args.attack_gen_args_wrmf_sgd
     elif config.att_type=="RandFilter":
         args.attack_gen_args=args.attack_gen_args_randfilter
+    elif config.att_type=="DQN":
+        args.attack_gen_args=args.attack_gen_args_dqn
     else:
         raise Error("Attack method error.")
     print("attack method={}".format(args.attack_gen_args))
@@ -66,13 +69,16 @@ def main(args,config):
         tag=attack_gen_args.tag
     )
     attack_gen_args.target_items = target_items
-    #print(attack_gen_args)
+    print(attack_gen_args.target_items)
 
-    adv_trainer_class = attack_gen_args.trainer_class
-    adv_trainer = adv_trainer_class(n_users=n_users,
-                                    n_items=n_items,
-                                    args=attack_gen_args)
-    adv_trainer.fit(train_data, test_data)
+    if config.att_type=="DQN":
+        DQN_attack(n_users=n_users,n_items=n_items,train_data=train_data,test_data=test_data,args=attack_gen_args)
+    else:
+        adv_trainer_class = attack_gen_args.trainer_class
+        adv_trainer = adv_trainer_class(n_users=n_users,
+                                        n_items=n_items,
+                                        args=attack_gen_args)
+        adv_trainer.fit(train_data, test_data)
 
 
 if __name__ == "__main__":
