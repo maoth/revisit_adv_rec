@@ -110,13 +110,10 @@ class BaseTrainer(object):
         recommendations = self.recommend(train_data, top_k=100)
         new_train_data=train_data
         for i in range(n_rows):
-            np.random.seed(int(time.time()))
-            round1_items_amount=np.random.randint(6)
+            round1_items_amount=np.random.randint(5)+1
             random_id=np.arange(20)
-            np.random.seed(int(time.time()))
             np.random.shuffle(random_id)
             random_id=random_id[:round1_items_amount]
-            print(random_id)
             top_1=recommendations[random_id]
             #top_1 = self.recommend(train_data, top_k=1)
             top_1 = [a[0] for a in top_1]
@@ -124,7 +121,6 @@ class BaseTrainer(object):
             rows = np.full(len(top_1),i)
             cols = np.array(top_1)
             data = np.ones_like(rows)
-            print(rows,cols,data)
 
             B = coo_matrix((data, (rows, cols)), shape=train_data.shape)
             new_train_data = new_train_data + B.tocsr()
