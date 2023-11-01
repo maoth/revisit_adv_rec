@@ -1,6 +1,7 @@
 import numpy as np  # Import the NumPy library
 from sklearn.decomposition import NMF
 from sklearn.cluster import KMeans
+from scipy.sparse import csr_matrix
 
 import torch
 import torch.nn as nn
@@ -64,16 +65,29 @@ class DQNAgent:
 
             loss = torch.nn.MSELoss()(q_values, target_q_values)
             loss.backward()
-            self.optimizer.step()            
+            self.optimizer.step()
 
-def adversary_pattern_generator(model,train_data,target_item,target_user,args):
+def generate_fake_data(fake_user_amount,adversary_pattern,item_clusters,n_items):
+    fake_users=np.zeros((fake_user_amount,n_items))
+    for i in range(fake_user_amount):
+        for j in range(len(adversary_pattern)):
+            group_id=adversary_pattern[j]
+            random_index = random.randint(0, len(item_clusters[group_id]) - 1)
+            sampled_item = item_clusters[group_id][random_index]
+            fake_users[i][sampled_item]=1
+    fake_users_record=csr_matrix(fake_users)
+    return fake_users_record
+
+def adversary_pattern_generator(model,train_data,test_data,target_item,target_user,args):
     mid_result_recommender=model
-    dataset=train_data
-    item_amounts=dataset.shape[1]
+    training_dataset=train_data
+    testing_dataset=test_data
+    user_amounts=training_dataset.shape[0]-args.n_fake_users
+    item_amounts=training_dataset.shape[1]
     c1 = np.array(target_item)
-    row_indices, col_indices = dataset.nonzero()
+    row_indices, col_indices = training_dataset.nonzero()
     item_ids = np.unique(col_indices)    
-    c2 = dataset[target_user, :].nonzero()[1]
+    c2 = np.array([item_amounts-1])
     I_set = set(item_ids)
     C1_set = set(c1)
     C2_set = set(c2)
@@ -83,7 +97,7 @@ def adversary_pattern_generator(model,train_data,target_item,target_user,args):
   
     n_components = 128 #tempoary
     nmf_model = NMF(n_components=n_components)
-    mat_W = nmf_model.fit_transform(dataset)  # User features (W matrix)
+    mat_W = nmf_model.fit_transform(training_dataset)  # User features (W matrix)
     mat_H = nmf_model.components_
     user_feature_vectors = mat_W
     mat_H=mat_H.transpose()
@@ -112,6 +126,7 @@ def adversary_pattern_generator(model,train_data,target_item,target_user,args):
     c2_items=[c2_item_feature_vectors[i] for i in range(len(c2_item_feature_vectors))]
     clusters.append(c1_items)
     clusters.append(c2_items)
+    print(clusters_itemid)
    
     num_actions=c+2
     state_dim = 10  # Example state dimension
@@ -127,7 +142,7 @@ def adversary_pattern_generator(model,train_data,target_item,target_user,args):
     # Training process
     num_iterations = args.adv_epochs  # Number of training iterations
     #current_state = []  # Define an initial state as an empty list
-    current_state=np.zeros(1)
+    current_state=np.array([c+1])
     current_state=current_state.reshape(1,current_state.size)
     actions=[]
     for iteration in range(num_iterations):
@@ -147,7 +162,10 @@ def adversary_pattern_generator(model,train_data,target_item,target_user,args):
             sampled_item_vectors.append(clusters[group_id][random_index])
         upweight_delta=0.1
         reward=Outcome_Estimater(sampled_item,upweight_delta,mid_result_recommender,item_amounts,target_user)
-        reward_score=torch.norm(reward[sampled_item[len(actions)-1]])
+        torch.cuda.empty_cache()
+        action_reward=reward[sampled_item[len(actions)-1]]
+        reward_score=torch.norm(action_reward)
+        
         # Simulate receiving a reward and transitioning to the next state
         next_state = current_state # Replace with the actual next state
         group_action_array=np.array([group_action])
@@ -158,5 +176,15 @@ def adversary_pattern_generator(model,train_data,target_item,target_user,args):
 
         # Phase 2: Parameter Update Stage
         agent.update()
+        torch.cuda.empty_cache()
+        
+        fake_data=generate_fake_data(fake_user_amount=args.n_fake_users,adversary_pattern=actions,item_clusters=clusters_itemid,n_items=item_amounts)
+        training_dataset_copy=training_dataset
+        for i in range(args.n_fake_users):
+            training_dataset_copy[user_amounts+i]=fake_data[i]
+        evaluation=mid_result_recommender.validate(train_data=training_dataset_copy,test_data=testing_dataset,target_items=target_item)
+        hit_ratio=evaluation.popitem()
+        cur_perf = hit_ratio[1]
+        print(iteration,reward_score,cur_perf)
             
     return actions, clusters_itemid

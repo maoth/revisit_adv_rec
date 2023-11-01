@@ -71,8 +71,8 @@ sur_wmf_dqn = {
     "lr": 1e-3,
     "l2": 5e-2,
     "save_feq": 10,
-    "batch_size": 32,
-    "valid_batch_size": 512,
+    "batch_size": 16,
+    "valid_batch_size": 16,
     "model": {
         "trainer_class": WMFTrainer,
         "model_name": "Sur-WeightedMF-sgd",
@@ -190,7 +190,7 @@ attack_gen_args_dqn_sgd = {
 
     # Args for adversarial training.
     "n_fakes": 0.01,
-    "adv_epochs": 30,
+    "adv_epochs": 3000,
     "unroll_steps": 0,
 
     "adv_lr": 1.0,
@@ -198,7 +198,7 @@ attack_gen_args_dqn_sgd = {
 
     "proj_threshold": 0.1,
     "click_targets": True,
-    "clusters": 3,
+    "clusters": 20,
 
     # Args for surrogate model.
     "surrogate": sur_wmf_dqn
