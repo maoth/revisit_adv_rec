@@ -32,7 +32,7 @@ def DQN_attack(n_users,n_items,train_data,test_data,args):
     
     target_item=args.target_items
     target_user=[6,7,8,9,10]
-    adversary_pattern,item_clusters=adversary_pattern_generator(mid_model,train_data,target_item,target_user,args)
+    adversary_pattern,item_clusters=adversary_pattern_generator(mid_model,train_data,test_data,target_item,target_user,args)
 
     fake_user_amount=3    
     fake_users=np.zeros((fake_user_amount,n_items))

@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import random
+import copy
 
 from output_estimator import Outcome_Estimater
 
@@ -36,19 +37,21 @@ class DQNAgent:
         self.num_actions=num_actions
         self.replay_memory = []
 
-    def select_action(self, state):
-        if random.random() < self.epsilon:
+    def select_action(self, state, epsilon):
+        if random.random() < epsilon:
             return random.randint(0, self.num_actions - 1)
         else:
-            state = torch.tensor(state, dtype=torch.long).to(self.device)
-            q_values = self.dqn(state)
+            self.dqn.eval()
+            with torch.no_grad():
+                state = torch.tensor(state, dtype=torch.long).to(self.device)
+                q_values = self.dqn(state)
             action = q_values.argmax().item()
             return action
 
     def update(self):
         if len(self.replay_memory) < self.batch_size:
             return
-
+        self.dqn.train()
         mini_batch = random.sample(self.replay_memory, self.batch_size)
         for state, action, reward, next_state in mini_batch:
             self.optimizer.zero_grad()
@@ -79,7 +82,6 @@ def generate_fake_data(fake_user_amount,adversary_pattern,item_clusters,n_items)
     return fake_users_record
 
 def adversary_pattern_generator(model,train_data,test_data,target_item,target_user,args):
-    mid_result_recommender=model
     training_dataset=train_data
     testing_dataset=test_data
     user_amounts=training_dataset.shape[0]-args.n_fake_users
@@ -126,65 +128,81 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
     c2_items=[c2_item_feature_vectors[i] for i in range(len(c2_item_feature_vectors))]
     clusters.append(c1_items)
     clusters.append(c2_items)
-    print(clusters_itemid)
    
     num_actions=c+2
     state_dim = 10  # Example state dimension
     embedding_dim = 32
     hidden_dim = 64
     #learning_rate = 0.001
-    epsilon = 0.1
+    epsilon = 0.3
     gamma = 0.9
     #batch_size = 32
+    fake_items = 10
 
     agent = DQNAgent(num_actions=num_actions, embedding_dim=embedding_dim, hidden_dim=hidden_dim, learning_rate=args.surrogate["lr"], epsilon=epsilon, gamma=gamma, batch_size=args.surrogate["batch_size"])
 
     # Training process
     num_iterations = args.adv_epochs  # Number of training iterations
     #current_state = []  # Define an initial state as an empty list
-    current_state=np.array([c+1])
-    current_state=current_state.reshape(1,current_state.size)
-    actions=[]
+    rewards = []
+    eval_window = 500
+    reward_window = 100
     for iteration in range(num_iterations):
+        actions=[]
+        current_state=np.array([c+1])
+        current_state=current_state.reshape(1,current_state.size)
         # Phase 1: Memory Generation Stage
-        group_action = agent.select_action(current_state)
-        actions.append(group_action)
-        action_id=group_action
+        for _ in range(fake_items):
+            group_action = agent.select_action(current_state, epsilon)
+            actions.append(group_action)
         
-        random_index = random.randint(0, len(clusters[action_id]) - 1)
-        sampled_item = clusters[action_id][random_index]
-        sampled_item=[]
-        sampled_item_vectors=[]
-        for i in range(len(actions)):
-            group_id=actions[i]
-            random_index = random.randint(0, len(clusters_itemid[group_id]) - 1)
-            sampled_item.append(clusters_itemid[group_id][random_index])
-            sampled_item_vectors.append(clusters[group_id][random_index])
-        upweight_delta=0.1
-        reward=Outcome_Estimater(sampled_item,upweight_delta,mid_result_recommender,item_amounts,target_user)
-        torch.cuda.empty_cache()
-        action_reward=reward[sampled_item[len(actions)-1]]
-        reward_score=torch.norm(action_reward)
-        
-        # Simulate receiving a reward and transitioning to the next state
-        next_state = current_state # Replace with the actual next state
-        group_action_array=np.array([group_action])
-        group_action_array=group_action_array.reshape(1,1)
-        next_state=np.concatenate((next_state,group_action_array),axis=1)
-        agent.replay_memory.append((current_state, group_action, reward_score, next_state))
-        current_state = next_state
+            sampled_item = []
+            for i in range(len(actions)):
+                group_id=actions[i]
+                random_index = random.randint(0, len(clusters_itemid[group_id]) - 1)
+                sampled_item.append(clusters_itemid[group_id][random_index])
+            
+            upweight_delta = 0.1
+            mid_result_recommender = copy.deepcopy(model)
+            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, item_amounts, target_user)
+            del mid_result_recommender
+            torch.cuda.empty_cache()
+            action_reward = reward[sampled_item[len(actions)-1]]
+            reward_score = torch.norm(action_reward).detach().item()
+
+            rewards.append(reward_score)
+            
+            # Simulate receiving a reward and transitioning to the next state
+            next_state = current_state # Replace with the actual next state
+            group_action_array = np.array([group_action])
+            group_action_array = group_action_array.reshape(1,1)
+            next_state = np.concatenate((next_state,group_action_array),axis=1)
+            agent.replay_memory.append((current_state, group_action, reward_score, next_state))
+            current_state = next_state
 
         # Phase 2: Parameter Update Stage
         agent.update()
         torch.cuda.empty_cache()
+
+        if epsilon > 0.1:
+            epsilon = epsilon - 0.0001
+
+        if iteration % reward_window == reward_window-1:
+            rewards = np.array(rewards)
+            print(f"iter: {iteration+1}, Reward: {np.mean(rewards):.2e}")
+            rewards = []
         
-        fake_data=generate_fake_data(fake_user_amount=args.n_fake_users,adversary_pattern=actions,item_clusters=clusters_itemid,n_items=item_amounts)
-        training_dataset_copy=training_dataset
-        for i in range(args.n_fake_users):
-            training_dataset_copy[user_amounts+i]=fake_data[i]
-        evaluation=mid_result_recommender.validate(train_data=training_dataset_copy,test_data=testing_dataset,target_items=target_item)
-        hit_ratio=evaluation.popitem()
-        cur_perf = hit_ratio[1]
-        print(iteration,reward_score,cur_perf)
+        if iteration % eval_window == eval_window-1:
+            fake_data=generate_fake_data(fake_user_amount=args.n_fake_users, adversary_pattern=actions, item_clusters=clusters_itemid, n_items=item_amounts)
+            training_dataset_copy = copy.deepcopy(training_dataset)
+            for i in range(args.n_fake_users):
+                training_dataset_copy[user_amounts+i]=fake_data[i]
+            
+            mid_result_recommender = copy.deepcopy(model)
+            evaluation = mid_result_recommender.validate(train_data=training_dataset_copy, test_data=testing_dataset, target_items=target_item)
+            del mid_result_recommender
+            hit_ratio=evaluation.popitem()
+            cur_perf = hit_ratio[1]
+            print(f"iter: {iteration+1}, Evaluation: {np.mean(cur_perf):.4f}")
             
     return actions, clusters_itemid

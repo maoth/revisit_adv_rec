@@ -59,7 +59,8 @@ def main(args,config):
     attack_gen_args.n_fakes=config.ratio/100
     attack_gen_args.unroll_steps=config.unroll
     attack_gen_args.tag=config.tag
-    print("popularity={},fake user ratio={},unroll epochs={}".format(attack_gen_args.target_item_popularity,attack_gen_args.n_fakes,attack_gen_args.unroll_steps))
+    attack_gen_args.n_fake_users = int(n_users * attack_gen_args.n_fakes)
+    print("popularity={}, fake user ratio={}, fake users={}, unroll epochs={}".format(attack_gen_args.target_item_popularity,attack_gen_args.n_fakes,attack_gen_args.n_fake_users, attack_gen_args.unroll_steps))
     target_items = sample_target_items(
         train_data,
         n_samples=attack_gen_args.n_target_items,

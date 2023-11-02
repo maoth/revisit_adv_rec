@@ -181,8 +181,8 @@ class BaseTrainer(object):
         result["TargetHR@%d" % cutoff] = (np.logical_or(target_items_position_1 < cutoff, target_items_position_2 < cutoff).sum(1) >= 1).mean()
 
         # Log results.
-        print("Attack Evaluation [{:.1f} s], {} ".format(
-            time.time() - t1, str(result)))
+        # print("Attack Evaluation [{:.1f} s], {} ".format(
+        #     time.time() - t1, str(result)))
         return result
     '''
     def validate(self, train_data, test_data, target_items):

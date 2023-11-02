@@ -198,7 +198,7 @@ attack_gen_args_dqn_sgd = {
 
     "proj_threshold": 0.1,
     "click_targets": True,
-    "clusters": 20,
+    "clusters": 100,
 
     # Args for surrogate model.
     "surrogate": sur_wmf_dqn

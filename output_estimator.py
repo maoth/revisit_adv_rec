@@ -9,7 +9,6 @@ import torch.nn as nn
 import torch.optim as optim
 
 def Outcome_Estimater(z,upweight_threshold,model,n_items,target_user):
-    torch.cuda.empty_cache()
     sample_data_list=np.array(z)
     sample_data=np.zeros((1,n_items))
     for i in range(sample_data_list.size):
@@ -20,12 +19,10 @@ def Outcome_Estimater(z,upweight_threshold,model,n_items,target_user):
     current_model=model
 
     rec_result=current_model.recommend(sample_data_csr,n_items)
-    torch.cuda.empty_cache()
 
     current_model_nn=current_model.net.to("cuda")
     current_model_nn.eval()
     logits=current_model_nn(user_id=target_user)
-    torch.cuda.empty_cache()
 
     sample_data_tensor=sparse2tensor(sample_data_csr)
     sample_data_tensor=sample_data_tensor.to("cuda")
@@ -34,13 +31,11 @@ def Outcome_Estimater(z,upweight_threshold,model,n_items,target_user):
     loss=torch.sum(loss)
 
     grad = torch.autograd.grad(loss, current_model_nn.params, create_graph=True)
-    torch.cuda.empty_cache()
 
     sample_data_tensor=torch.transpose(sample_data_tensor,0,1)
     grad_dot_Z = torch.sum(grad[0] * sample_data_tensor)
 
     hvp = torch.autograd.grad(grad_dot_Z, current_model_nn.params)
-    torch.cuda.empty_cache()
 
     H_matrix_inverse=hvp[0]
     gradients=grad[0]
@@ -50,5 +45,8 @@ def Outcome_Estimater(z,upweight_threshold,model,n_items,target_user):
       
     influence=(-1)* gradients * out_score * H_matrix_inverse * gradients * loss
     influence=influence/1e10
-    torch.cuda.empty_cache()      
+    
+    del current_model_nn
+    del sample_data_tensor
+
     return influence.float()
