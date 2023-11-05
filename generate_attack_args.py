@@ -67,7 +67,7 @@ sur_wmf_als = {
 
 sur_wmf_dqn = {
     **shared_params,
-    "epochs": 10,
+    "epochs": 50,
     "lr": 1e-3,
     "l2": 5e-2,
     "save_feq": 10,
@@ -190,7 +190,7 @@ attack_gen_args_dqn_sgd = {
 
     # Args for adversarial training.
     "n_fakes": 0.01,
-    "adv_epochs": 3000,
+    "adv_epochs": 3,
     "unroll_steps": 0,
 
     "adv_lr": 1.0,

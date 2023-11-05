@@ -147,6 +147,15 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
     rewards = []
     eval_window = 500
     reward_window = 100
+    
+    recommendation_of_normal_users=model.recommend(training_dataset[:user_amounts],item_amounts)
+    training_dataset_copy = copy.deepcopy(training_dataset)           
+    mid_result_recommender = copy.deepcopy(model)
+    evaluation = mid_result_recommender.validate(train_data=training_dataset_copy, test_data=testing_dataset, target_items=target_item)
+    del mid_result_recommender
+    hit_ratio=evaluation.popitem()
+    cur_perf = hit_ratio[1]
+    print(f"iter 0: Evaluation: {np.mean(cur_perf):.4f}")
     for iteration in range(num_iterations):
         actions=[]
         current_state=np.array([c+1])
@@ -164,7 +173,8 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
             
             upweight_delta = 0.1
             mid_result_recommender = copy.deepcopy(model)
-            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, item_amounts, target_user)
+
+            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, recommendation_of_normal_users,item_amounts, user_amounts,target_user,target_item)
             del mid_result_recommender
             torch.cuda.empty_cache()
             action_reward = reward[sampled_item[len(actions)-1]]
