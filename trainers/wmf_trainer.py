@@ -88,7 +88,7 @@ class WMFTrainer(BaseTrainer):
             return self.train_als(*args, **kwargs)
 
     def train_als(self, data):
-        model = self.net  # A warning will raise if use .to() method here.
+        model = self.net.to(self.device)  # A warning will raise if use .to() method here.
         P = model.P.detach()
         Q = model.Q.detach()
 
