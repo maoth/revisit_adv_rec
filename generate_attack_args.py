@@ -190,7 +190,7 @@ attack_gen_args_dqn_sgd = {
 
     # Args for adversarial training.
     "n_fakes": 0.01,
-    "adv_epochs": 3,
+    "adv_epochs": 3000,
     "unroll_steps": 0,
 
     "adv_lr": 1.0,

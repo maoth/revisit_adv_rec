@@ -80,6 +80,21 @@ def generate_fake_data(fake_user_amount,adversary_pattern,item_clusters,n_items)
             fake_users[i][sampled_item]=1
     fake_users_record=csr_matrix(fake_users)
     return fake_users_record
+    
+def generate_target_users(model,training_dataset,user_amounts,item_amounts,target_item):
+    current_model=model
+    recommendation_of_normal_users=model.recommend(training_dataset[:user_amounts],item_amounts)
+    rank_of_items=[np.where(row==target_item)[0] for row in recommendation_of_normal_users]
+    rank_of_items=np.asarray(rank_of_items)
+    rank_of_items=np.reshape(rank_of_items,(1,len(rank_of_items)))[0]
+    real_target_users=[]
+    for i in range(len(rank_of_items)):
+        if rank_of_items[i]>20:
+            real_target_users.append((i,rank_of_items[i]))
+    real_target_users=sorted(real_target_users,key=lambda x:x[1])
+    real_target_users=real_target_users[:int(user_amounts*0.1)]
+    real_target_users_id=[ele[1] for ele in real_target_users]
+    return real_target_users_id
 
 def adversary_pattern_generator(model,train_data,test_data,target_item,target_user,args):
     training_dataset=train_data
@@ -148,14 +163,14 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
     eval_window = 500
     reward_window = 100
     
-    recommendation_of_normal_users=model.recommend(training_dataset[:user_amounts],item_amounts)
     training_dataset_copy = copy.deepcopy(training_dataset)           
     mid_result_recommender = copy.deepcopy(model)
     evaluation = mid_result_recommender.validate(train_data=training_dataset_copy, test_data=testing_dataset, target_items=target_item)
-    del mid_result_recommender
     hit_ratio=evaluation.popitem()
     cur_perf = hit_ratio[1]
     print(f"iter 0: Evaluation: {np.mean(cur_perf):.4f}")
+    target_user=generate_target_users(mid_result_recommender,training_dataset,user_amounts,item_amounts,target_item)
+    del mid_result_recommender
     for iteration in range(num_iterations):
         actions=[]
         current_state=np.array([c+1])
@@ -174,7 +189,7 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
             upweight_delta = 0.1
             mid_result_recommender = copy.deepcopy(model)
 
-            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, recommendation_of_normal_users,item_amounts, user_amounts,target_user,target_item)
+            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, item_amounts,target_user)
             del mid_result_recommender
             torch.cuda.empty_cache()
             action_reward = reward[sampled_item[len(actions)-1]]
