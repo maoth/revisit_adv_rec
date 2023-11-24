@@ -2,6 +2,7 @@ import numpy as np  # Import the NumPy library
 from sklearn.decomposition import NMF
 from sklearn.cluster import KMeans
 from scipy.sparse import csr_matrix
+from bunch import Bunch
 
 import torch
 import torch.nn as nn
@@ -9,7 +10,7 @@ import torch.optim as optim
 import random
 import copy
 
-from output_estimator import Outcome_Estimater
+from output_estimator_v2 import Outcome_Estimater
 
 # Define the DQN class
 class DQN(nn.Module):
@@ -49,10 +50,13 @@ class DQNAgent:
             return action
 
     def update(self):
-        if len(self.replay_memory) < self.batch_size:
+        if len(self.replay_memory) <=self.batch_size:
             return
         self.dqn.train()
-        mini_batch = random.sample(self.replay_memory, self.batch_size)
+        if len(self.replay_memory)<=self.batch_size*5:
+            mini_batch = random.sample(self.replay_memory, self.batch_size)
+        else:
+            mini_batch = random.sample(self.replay_memory[-(self.batch_size*5):], self.batch_size)
         for state, action, reward, next_state in mini_batch:
             self.optimizer.zero_grad()
             state = torch.tensor(state, dtype=torch.long).to(self.device)
@@ -71,6 +75,7 @@ class DQNAgent:
             self.optimizer.step()
 
 def generate_fake_data(fake_user_amount,adversary_pattern,item_clusters,n_items):
+    fake_users_id=np.zeros(fake_user_amount)
     fake_users=np.zeros((fake_user_amount,n_items))
     for i in range(fake_user_amount):
         for j in range(len(adversary_pattern)):
@@ -78,8 +83,9 @@ def generate_fake_data(fake_user_amount,adversary_pattern,item_clusters,n_items)
             random_index = random.randint(0, len(item_clusters[group_id]) - 1)
             sampled_item = item_clusters[group_id][random_index]
             fake_users[i][sampled_item]=1
-    fake_users_record=csr_matrix(fake_users)
-    return fake_users_record
+            fake_users_id[i]=sampled_item
+    #fake_users_record=csr_matrix(fake_users)
+    return fake_users,fake_users_id
     
 def generate_target_users(model,training_dataset,user_amounts,item_amounts,target_item):
     current_model=model
@@ -92,7 +98,7 @@ def generate_target_users(model,training_dataset,user_amounts,item_amounts,targe
         if rank_of_items[i]>20:
             real_target_users.append((i,rank_of_items[i]))
     real_target_users=sorted(real_target_users,key=lambda x:x[1])
-    real_target_users=real_target_users[:int(user_amounts*0.1)]
+    real_target_users=real_target_users[:int(user_amounts*0.1)] #target user amounts 
     real_target_users_id=[ele[1] for ele in real_target_users]
     return real_target_users_id
 
@@ -148,13 +154,13 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
     state_dim = 10  # Example state dimension
     embedding_dim = 32
     hidden_dim = 64
-    #learning_rate = 0.001
+    learning_rate = 0.001
     epsilon = 0.3
     gamma = 0.9
-    #batch_size = 32
+    batch_size = 32
     fake_items = 10
 
-    agent = DQNAgent(num_actions=num_actions, embedding_dim=embedding_dim, hidden_dim=hidden_dim, learning_rate=args.surrogate["lr"], epsilon=epsilon, gamma=gamma, batch_size=args.surrogate["batch_size"])
+    agent = DQNAgent(num_actions=num_actions, embedding_dim=embedding_dim, hidden_dim=hidden_dim, learning_rate=learning_rate, epsilon=epsilon, gamma=gamma, batch_size=batch_size)
 
     # Training process
     num_iterations = args.adv_epochs  # Number of training iterations
@@ -169,7 +175,8 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
     hit_ratio=evaluation.popitem()
     cur_perf = hit_ratio[1]
     print(f"iter 0: Evaluation: {np.mean(cur_perf):.4f}")
-    target_user=generate_target_users(mid_result_recommender,training_dataset,user_amounts,item_amounts,target_item)
+    target_user_id=generate_target_users(mid_result_recommender,training_dataset,user_amounts,item_amounts,target_item)
+    target_user=training_dataset_copy[target_user_id,:]
     del mid_result_recommender
     for iteration in range(num_iterations):
         actions=[]
@@ -179,23 +186,19 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
         for _ in range(fake_items):
             group_action = agent.select_action(current_state, epsilon)
             actions.append(group_action)
-        
-            sampled_item = []
-            for i in range(len(actions)):
-                group_id=actions[i]
-                random_index = random.randint(0, len(clusters_itemid[group_id]) - 1)
-                sampled_item.append(clusters_itemid[group_id][random_index])
             
             upweight_delta = 0.1
             mid_result_recommender = copy.deepcopy(model)
+            sampled_item,sampled_item_id=generate_fake_data(fake_user_amount=args.n_fake_users, adversary_pattern=actions, item_clusters=clusters_itemid, n_items=item_amounts)
 
-            reward = Outcome_Estimater(sampled_item, upweight_delta, mid_result_recommender, item_amounts,target_user)
+            reward=Outcome_Estimater(sampled_item,mid_result_recommender,target_user,target_user_id,item_amounts,user_amounts,args.n_fake_users,target_item)
             del mid_result_recommender
             torch.cuda.empty_cache()
-            action_reward = reward[sampled_item[len(actions)-1]]
-            reward_score = torch.norm(action_reward).detach().item()
+            action_reward=[torch.norm(reward[i]) for i in range(len(reward))]
+            reward_score=sum(action_reward)/len(action_reward)
 
             rewards.append(reward_score)
+            del reward
             
             # Simulate receiving a reward and transitioning to the next state
             next_state = current_state # Replace with the actual next state
@@ -218,14 +221,18 @@ def adversary_pattern_generator(model,train_data,test_data,target_item,target_us
             rewards = []
         
         if iteration % eval_window == eval_window-1:
-            fake_data=generate_fake_data(fake_user_amount=args.n_fake_users, adversary_pattern=actions, item_clusters=clusters_itemid, n_items=item_amounts)
+            fake_data,fake_users_id=generate_fake_data(fake_user_amount=args.n_fake_users, adversary_pattern=actions, item_clusters=clusters_itemid, n_items=item_amounts)
+            fake_data=csr_matrix(fake_data)
             training_dataset_copy = copy.deepcopy(training_dataset)
             for i in range(args.n_fake_users):
                 training_dataset_copy[user_amounts+i]=fake_data[i]
-            
-            mid_result_recommender = copy.deepcopy(model)
-            evaluation = mid_result_recommender.validate(train_data=training_dataset_copy, test_data=testing_dataset, target_items=target_item)
-            del mid_result_recommender
+                
+            new_model_class=args.surrogate['model']['trainer_class']
+            new_model=new_model_class(n_users=user_amounts+args.n_fake_users,n_items=item_amounts,args=Bunch(args.surrogate))
+            new_model.fit(training_dataset_copy,testing_dataset)
+
+            evaluation = new_model.validate(train_data=training_dataset_copy, test_data=testing_dataset, target_items=target_item)
+            del new_model
             hit_ratio=evaluation.popitem()
             cur_perf = hit_ratio[1]
             print(f"iter: {iteration+1}, Evaluation: {np.mean(cur_perf):.4f}")

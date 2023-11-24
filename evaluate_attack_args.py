@@ -116,8 +116,8 @@ attack_eval_args = {
 
     # Path to the fake data.
     # If None, then evaluate clean performance without attack.
-    #"fake_data_path": "./outputs/",
-    "fake_data_path": None,
+    "fake_data_path": "./outputs/",
+    #"fake_data_path": None,
     # Path to the target items.
     "target_items_path": "./outputs/sampled_target_items_1_",
 
