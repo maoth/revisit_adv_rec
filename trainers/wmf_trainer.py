@@ -68,7 +68,6 @@ class WMFTrainer(BaseTrainer):
         self.net = WeightedMF(
             n_users=self.n_users, n_items=self.n_items,
             model_args=model_args).to(self.device)
-        print(self)
 
         self.optimizer = optim.Adam(self.net.parameters(), lr=self.args.lr,
                                     weight_decay=self.args.l2)
@@ -214,11 +213,10 @@ class WMFTrainer(BaseTrainer):
                 loss.backward()
                 optimizer.step()
 
-            print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(
-                time.time() - t1, i, epoch_loss))
+            #print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
 
         with higher.innerloop_ctx(model, optimizer) as (fmodel, diffopt):
-            print("Switching to higher mode...")
+            #print("Switching to higher mode...")
             for i in range(epoch_num - unroll_steps + 1, epoch_num + 1):
                 torch.cuda.empty_cache()
                 t1 = time.time()
@@ -235,17 +233,18 @@ class WMFTrainer(BaseTrainer):
                     diffopt.step(loss)
                     torch.cuda.empty_cache()
 
-                print("Training (higher mode) [{:.1f} s],"
-                      " epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
+                #print("Training (higher mode) [{:.1f} s],"
+                #      " epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
                 torch.cuda.empty_cache()
 
             torch.cuda.empty_cache()
-            print("Finished surrogate model training,"
-                  " {} copies of surrogate model params.".format(len(fmodel._fast_params)))
+            #print("Finished surrogate model training,"
+            #      " {} copies of surrogate model params.".format(len(fmodel._fast_params)))
             torch.cuda.empty_cache()
             fmodel.eval()
             predictions = fmodel()
             # Compute adversarial (outer) loss.
+
             adv_loss = mult_ce_loss(
                 logits=predictions[:-n_fakes, ],
                 data=target_tensor[:-n_fakes, ]).sum()
@@ -267,7 +266,7 @@ class WMFTrainer(BaseTrainer):
         for i in range(1, epoch_num + 1):
             t1 = time.time()
             self.train_als(data=train_data)
-            print("Training [{:.1f} s], epoch: {}".format(time.time() - t1, i))
+            #print("Training [{:.1f} s], epoch: {}".format(time.time() - t1, i))
 
         data_tensor = data_tensor.to(self.device)
         target_tensor = torch.zeros_like(data_tensor)

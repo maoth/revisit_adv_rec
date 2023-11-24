@@ -93,8 +93,7 @@ class BlackBoxAdvTrainer:
             sur_trainer, adv_loss, adv_grads = _compute_adv_grads()
             if self.args.click_targets:
                 adv_grads[:, self.target_items] = 0.0
-            print("Adversarial training [{:.1f} s],  epoch: {}, loss: {:.4f}".format(
-                time.time() - t1, epoch_num, adv_loss))
+            #print("Adversarial training [{:.1f} s],  epoch: {}, loss: {:.4f}".format(time.time() - t1, epoch_num, adv_loss))
 
             # Normalize the adversarial gradient: with l2-norm, this becomes
             # steepest descent in l2 which makes convergence faster.
@@ -138,8 +137,7 @@ class BlackBoxAdvTrainer:
         if self.args.attack_type == "random":
             cur_fake_tensor = self.fake_tensor.detach().clone()
             cur_sur_trainer, random_fake_tensor = self.train_epoch(train_data, -1)
-            print("Total changes in fake data: {}".format(
-                (random_fake_tensor - cur_fake_tensor).abs().sum().item()))
+            #print("Total changes in fake data: {}".format((random_fake_tensor - cur_fake_tensor).abs().sum().item()))
             best_fake_data = tensor2sparse(random_fake_tensor)
 
         elif self.args.attack_type == "adversarial":
@@ -149,8 +147,7 @@ class BlackBoxAdvTrainer:
             for epoch_num in range(1, self.args.adv_epochs + 1):
                 # Update fake data with adversarial gradients.
                 cur_sur_trainer, new_fake_tensor = self.train_epoch(train_data, epoch_num)
-                print("Total changes in fake data: {}".format(
-                    (new_fake_tensor - cur_fake_tensor).abs().sum().item()))
+                #print("Total changes in fake data: {}".format((new_fake_tensor - cur_fake_tensor).abs().sum().item()))
 
                 # Evaluate attack for current fake data on surrogate model.
                 if epoch_num==self.args.adv_epochs:
@@ -178,7 +175,7 @@ class BlackBoxAdvTrainer:
                     self.fake_tensor.data = new_fake_tensor.detach().clone()
                     cur_fake_tensor = new_fake_tensor.detach().clone()
             #print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
-            print("Final result HR@20={:.7f}".format(last_perf))
+            #print("Final result HR@20={:.7f}".format(last_perf))
 
         # Save processed fake data.
         fake_data_path = os.path.join(
@@ -196,7 +193,11 @@ class BlackBoxAdvTrainer:
         indices = np.arange(len(qual_users))
         np.random.shuffle(indices)
         sampled_users = qual_users[:self.n_fakes]
+        if len(sampled_users<self.n_fakes):
+            fake_cnt=len(sampled_users)
+        else:
+            fake_cnt=self.n_fakes
         fake_data = sparse.csr_matrix(train_data[sampled_users],
                                       dtype=np.float64,
-                                      shape=(self.n_fakes, self.n_items))
+                                      shape=(fake_cnt,self.n_items))  #shape=(self.n_fakes, self.n_items))
         return fake_data

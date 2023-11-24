@@ -45,8 +45,8 @@ class BaseTrainer(object):
         """Wrapper for train_epoch with some logs."""
         time_st = time.time()
         epoch_loss = self.train_epoch(train_data)
-        print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(
-                time.time() - time_st, epoch_num, epoch_loss))
+        #print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(
+        #        time.time() - time_st, epoch_num, epoch_loss))
 
     def evaluate_epoch(self, train_data, test_data, epoch_num):
         """Evaluate model performance on test data."""
@@ -93,8 +93,8 @@ class BaseTrainer(object):
                     result[name] = value
             ind += len(metric)
 
-        print("Evaluation [{:.1f} s],  epoch: {}, {} ".format(
-            time.time() - t1, epoch_num, str(result)))
+        #print("Evaluation [{:.1f} s],  epoch: {}, {} ".format(
+        #    time.time() - t1, epoch_num, str(result)))
         return result
 
     def validate(self, train_data, test_data, target_items):
@@ -110,7 +110,7 @@ class BaseTrainer(object):
         recommendations = self.recommend(train_data, top_k=100)
         new_train_data=train_data
         for i in range(n_rows):
-            round1_items_amount=np.random.randint(5)+1
+            round1_items_amount=np.random.randint(5)+1 #max 20 debug
             random_id=np.arange(20)
             np.random.shuffle(random_id)
             random_id=random_id[:round1_items_amount]
@@ -179,7 +179,7 @@ class BaseTrainer(object):
         # Note that here target_pos starts from 0.
         cutoff = 20
         result["TargetHR@%d" % cutoff] = (np.logical_or(target_items_position_1 < cutoff, target_items_position_2 < cutoff).sum(1) >= 1).mean()
-
+        #print("Final result in validation HR@20={:.7f}".format(result["TargetHR@20"]))
         # Log results.
         # print("Attack Evaluation [{:.1f} s], {} ".format(
         #     time.time() - t1, str(result)))
@@ -250,8 +250,8 @@ class BaseTrainer(object):
                 if result[self.golden_metric] > best_perf:
                     str_metric = "{}={:.4f}".format(self.golden_metric,
                                                     result[self.golden_metric])
-                    print("Having better model checkpoint with"
-                          " performance {}".format(str_metric))
+                    #print("Having better model checkpoint with"
+                    #      " performance {}".format(str_metric))
                     checkpoint_path = os.path.join(
                         self.args.output_dir,
                         self.args.model['model_name'])
@@ -264,7 +264,7 @@ class BaseTrainer(object):
                     best_checkpoint_path = checkpoint_path
 
         # Load best model and evaluate on test data.
-        print("Loading best model checkpoint.")
+        #print("Loading best model checkpoint.")
         self.restore(best_checkpoint_path)
         self.evaluate_epoch(train_data, test_data, -1)
 
