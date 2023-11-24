@@ -24,3 +24,5 @@ srun -A r00066 python3 evaluate_attack.py -dataset ml-1m -att_type RandFilter -p
 ```
 Where the parameter is same with generate_attack.py, the -tag parameter need to be same when you running generate_attack.py.  
 
+### test results
+4 data in a line means the HR in top 20 with 1.non-attack(benign data) 2.original revisit attack 3.attack with specific target users 4.attack with adding trigger item 
