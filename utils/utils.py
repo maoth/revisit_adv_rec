@@ -42,14 +42,14 @@ def sample_target_items(train_data, n_samples, popularity, use_fix=False, output
     if len(valid_items) < n_samples:
         raise ValueError("Cannot sample enough items that meet criteria.")
 
-    np.random.shuffle(valid_items)
+    #np.random.shuffle(valid_items)
     sampled_items = valid_items[:n_samples]
     sampled_items.sort()
-    print("Sampled target items: {}".format(sampled_items.tolist()))
+    #print("Sampled target items: {}".format(sampled_items.tolist()))
     if output_dir is not None:
         file_name = "sampled_target_items_%s_%s_%s" % (n_samples, popularity,tag)
         file_path = "%s.npz" % os.path.join(output_dir, file_name)
-        print("Saving fake data to {}".format(file_path))
+        #print("Saving fake data to {}".format(file_path))
         np.savez(file_path, target_items=sampled_items)
 
     return sampled_items
@@ -119,7 +119,7 @@ def stack_csrdata(data1, data2):
 def save_fake_data(fake_data, path):
     """Save fake data to file."""
     file_path = "%s.npz" % path
-    print("Saving fake data to {}".format(file_path))
+    #print("Saving fake data to {}".format(file_path))
     sparse.save_npz(file_path, fake_data)
     return file_path
 
@@ -127,7 +127,7 @@ def save_fake_data(fake_data, path):
 def load_fake_data(file_path):
     """Load fake data from file."""
     fake_data = sparse.load_npz(file_path)
-    print("Loaded fake data from {}".format(file_path))
+    #print("Loaded fake data from {}".format(file_path))
     return fake_data
 
 
@@ -139,7 +139,7 @@ def save_checkpoint(model, optimizer, path, epoch=-1):
         "optimizer": optimizer.state_dict(),
     }
     file_path = "%s.pt" % path
-    print("Saving checkpoint to {}".format(file_path))
+    #print("Saving checkpoint to {}".format(file_path))
     torch.save(state, file_path)
 
 
@@ -147,6 +147,5 @@ def load_checkpoint(path):
     """Load model checkpoint and optimizer state from file."""
     file_path = "%s.pt" % path
     state = torch.load(file_path, map_location=torch.device('cuda'))
-    print("Loaded checkpoint from {} (epoch {})".format(
-        file_path, state["epoch"]))
+    #print("Loaded checkpoint from {} (epoch {})".format(file_path, state["epoch"]))
     return state["epoch"], state["state_dict"], state["optimizer"]
