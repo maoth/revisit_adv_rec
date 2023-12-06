@@ -13,7 +13,7 @@ from utils.utils import save_fake_data
 
 
 class BlackBoxAdvTrainer:
-    def __init__(self, n_users, n_items, args):
+    def __init__(self, n_users, n_items, args,attack_ver):
         self.args = args
 
         self.device = torch.device("cuda" if self.args.use_cuda else "cpu")
@@ -21,8 +21,10 @@ class BlackBoxAdvTrainer:
         self.n_users = n_users
         self.n_items = n_items
         self.n_fakes = args.n_fakes if args.n_fakes > 1 else int(n_users * args.n_fakes)
+        self.ver=attack_ver
 
         self.target_items = args.target_items
+        self.trigger_items=args.trigger_item
         self.golden_metric = "TargetHR@20"  #TargetHR@50 original !!!!
 
     def __repr__(self):
@@ -113,6 +115,8 @@ class BlackBoxAdvTrainer:
 
             if self.args.click_targets:
                 new_fake_tensor[:, self.target_items] = 1.0
+            if self.ver==1:
+                new_fake_tensor[:,self.trigger_items]=1.0
 
         return sur_trainer, new_fake_tensor
 
@@ -124,7 +128,7 @@ class BlackBoxAdvTrainer:
             target_items=self.target_items)
         return result
 
-    def fit(self, train_data, test_data):
+    def fit(self, train_data, test_data,train_target_users):
         """Full training loop for adversarial fake data."""
         self._initialize(train_data)
 
@@ -152,10 +156,8 @@ class BlackBoxAdvTrainer:
                 # Evaluate attack for current fake data on surrogate model.
                 if epoch_num==self.args.adv_epochs:
                     cur_fake_data = tensor2sparse(cur_fake_tensor)
-                    result = self.evaluate_epoch(
-                        trainer=cur_sur_trainer,
-                        train_data=stack_csrdata(train_data, cur_fake_data),
-                        test_data=test_data)
+                    #result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data, cur_fake_data),test_data=test_data)
+                    result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_target_users, cur_fake_data),test_data=test_data)
 
                 # Save fake data if it has larger impact.
                     cur_perf = result[self.golden_metric]
@@ -186,18 +188,29 @@ class BlackBoxAdvTrainer:
     def init_fake_data(self, train_data):
         """Initialize fake data by random sampling from normal data."""
         train_data = train_data.toarray()
-        max_allowed_click = 20   #original 100 !!!!!
-        user_clicks = train_data.sum(1)
-        qual_users = np.where(user_clicks <= max_allowed_click)[0]
+        if self.ver==0:
+            max_allowed_click = 20   #original 100 !!!!!
+            user_clicks = train_data.sum(1)
+            qual_users = np.where(user_clicks <= max_allowed_click)[0]
 
-        indices = np.arange(len(qual_users))
-        np.random.shuffle(indices)
-        sampled_users = qual_users[:self.n_fakes]
-        if len(sampled_users<self.n_fakes):
-            fake_cnt=len(sampled_users)
-        else:
+            indices = np.arange(len(qual_users))
+            np.random.shuffle(indices)
+            sampled_users = qual_users[:self.n_fakes]
+            if len(sampled_users<self.n_fakes):
+                fake_cnt=len(sampled_users)
+            else:
+                fake_cnt=self.n_fakes
+            sampled_users_matrix=train_data[sampled_users]
+                
+        if self.ver==1:
+            sampled_users=np.zeros((self.n_fakes,self.n_items))
+            sampled_users[:,self.target_items[0]]=1
+            sampled_users[:,self.trigger_items]=1
+            self.args.click_targets=True
+            sampled_users_matrix=sampled_users
             fake_cnt=self.n_fakes
-        fake_data = sparse.csr_matrix(train_data[sampled_users],
+
+        fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,
                                       shape=(fake_cnt,self.n_items))  #shape=(self.n_fakes, self.n_items))
         return fake_data
