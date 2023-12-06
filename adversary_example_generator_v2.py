@@ -99,7 +99,7 @@ def generate_target_users(model,training_dataset,user_amounts,item_amounts,targe
             real_target_users.append((i,rank_of_items[i]))
     real_target_users=sorted(real_target_users,key=lambda x:x[1])
     real_target_users=real_target_users[:int(user_amounts*0.1)] #target user amounts 
-    real_target_users_id=[ele[1] for ele in real_target_users]
+    real_target_users_id=[ele[0] for ele in real_target_users]
     return real_target_users_id
 
 def adversary_pattern_generator(model,train_data,test_data,target_item,target_user,args):
