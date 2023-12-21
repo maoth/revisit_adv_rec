@@ -1,0 +1,596 @@
+Python 3.10.2
+Thu Dec 21 04:47:25 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.05             Driver Version: 535.104.05   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA A100-SXM4-40GB          On  | 00000000:03:00.0 Off |                    0 |
+| N/A   33C    P0              46W / 400W |      4MiB / 40960MiB |      0%      Default |
+|                                         |                      |             Disabled |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+0 target item=[1363],trigger item=61
+0.4636 7.1523 0.4305 0.7285 8.4272
+1 target item=[805],trigger item=2467
+1.1755 0.0000 1.1424 1.3576 0.0331
+2 target item=[359],trigger item=1477
+1.5563 0.0662 1.7715 1.8377 0.2483
+3 target item=[314],trigger item=1344
+3.6424 0.5960 3.6093 3.9735 0.7947
+4 target item=[1125],trigger item=3
+0.7285 10.1325 0.4636 0.8113 9.6358
+5 target item=[1431],trigger item=148
+0.4305 15.3146 0.5298 0.8444 13.0629
+6 target item=[177],trigger item=1510
+2.4172 0.0993 2.3675 2.5166 0.1159
+7 target item=[931],trigger item=157
+1.8709 7.6987 2.2682 2.2351 7.5993
+8 target item=[911],trigger item=18
+3.4437 11.8212 3.4934 3.2450 13.1126
+9 target item=[1796],trigger item=156
+1.2914 10.1821 1.7053 1.3742 9.4040
+Round 10
+benign HR=1.70,benign trigger HR=6.31 revisit HR=1.78,target item HR=1.89,trigger item HR=6.24
+trigger item HR increase:6
+10 target item=[768],trigger item=228
+0.4305 11.5894 0.5629 0.9106 12.5497
+11 target item=[1134],trigger item=1223
+0.6457 0.1656 0.5464 0.8940 0.2980
+12 target item=[1953],trigger item=166
+0.4470 13.9073 0.4801 0.9603 10.6788
+13 target item=[403],trigger item=18
+2.3013 12.7483 1.8046 2.2185 12.8311
+14 target item=[372],trigger item=144
+0.7119 12.2185 0.7285 0.8609 10.8940
+15 target item=[647],trigger item=155
+0.7285 5.4305 0.7119 0.9106 5.7119
+16 target item=[151],trigger item=149
+1.3742 11.2748 1.5232 1.7384 9.6026
+17 target item=[709],trigger item=2088
+2.7483 0.0000 2.7483 2.8477 0.0331
+18 target item=[1153],trigger item=6
+1.9040 9.0563 2.1689 2.1192 9.1391
+19 target item=[461],trigger item=149
+1.2086 12.7483 0.6457 1.2914 11.3576
+Round 20
+benign HR=1.48,benign trigger HR=7.61 revisit HR=1.49,target item HR=1.68,trigger item HR=7.28
+trigger item HR increase:12
+20 target item=[238],trigger item=149
+2.7318 11.7550 2.5993 2.5828 10.2152
+21 target item=[193],trigger item=157
+0.9272 8.0298 0.8444 1.0265 8.4768
+22 target item=[594],trigger item=1954
+1.2914 0.2152 1.0099 1.6225 0.3146
+23 target item=[64],trigger item=1475
+1.6225 0.4470 2.1026 2.3841 0.5132
+24 target item=[1610],trigger item=45
+0.7119 7.6325 0.6623 1.2417 8.3609
+25 target item=[314],trigger item=1807
+3.3278 0.4139 3.9404 3.3775 0.7947
+26 target item=[589],trigger item=2215
+0.5298 0.0497 0.5629 0.7450 0.1159
+27 target item=[641],trigger item=2043
+1.6060 0.2152 1.3576 1.9702 0.3477
+28 target item=[1774],trigger item=149
+1.1921 12.5662 1.2252 1.5397 12.4338
+29 target item=[1774],trigger item=149
+1.3411 11.5563 1.0265 1.5894 12.4172
+Round 30
+benign HR=1.49,benign trigger HR=6.84 revisit HR=1.50,target item HR=1.73,trigger item HR=6.65
+trigger item HR increase:20
+30 target item=[1841],trigger item=504
+1.2748 7.0530 1.5066 1.4404 6.7715
+31 target item=[214],trigger item=0
+0.1821 10.8609 0.2980 0.5795 10.7119
+32 target item=[232],trigger item=2070
+2.5993 0.0662 2.4503 2.5000 0.2318
+33 target item=[386],trigger item=0
+0.4139 11.2583 0.4470 0.6457 10.8113
+34 target item=[822],trigger item=3
+2.1192 10.6788 1.9702 2.1358 9.6358
+35 target item=[1560],trigger item=1850
+0.8278 0.0000 0.6457 1.0596 0.0993
+36 target item=[792],trigger item=444
+0.8775 3.6589 0.7450 0.9437 4.4702
+37 target item=[1648],trigger item=86
+2.7483 1.3576 2.5000 2.6325 1.8046
+38 target item=[658],trigger item=9
+0.8940 15.4636 0.5464 0.9934 14.0728
+39 target item=[930],trigger item=1644
+2.5662 0.4967 2.3510 2.6159 0.5298
+Round 40
+benign HR=1.48,benign trigger HR=6.65 revisit HR=1.46,target item HR=1.68,trigger item HR=6.47
+trigger item HR increase:25
+40 target item=[331],trigger item=146
+0.5132 9.8179 0.5298 0.7616 9.6358
+41 target item=[81],trigger item=149
+0.2483 13.4603 0.2980 0.4967 11.8377
+42 target item=[958],trigger item=157
+0.6623 9.4868 0.7119 0.9272 8.1291
+43 target item=[304],trigger item=0
+1.2583 12.6159 1.1258 1.6556 11.3411
+44 target item=[1154],trigger item=228
+0.8940 12.1523 0.7947 0.9934 14.1887
+45 target item=[1638],trigger item=61
+0.7285 7.8477 0.5298 0.9106 6.9536
+46 target item=[1102],trigger item=156
+0.9768 10.8775 1.0099 1.3576 9.4702
+47 target item=[221],trigger item=1198
+1.4073 0.6623 1.3079 1.5728 0.5795
+48 target item=[115],trigger item=61
+1.0099 7.5828 1.0596 1.2748 6.6391
+49 target item=[526],trigger item=217
+1.9371 0.0497 1.6391 1.8709 0.1325
+Round 50
+benign HR=1.38,benign trigger HR=7.01 revisit HR=1.35,target item HR=1.58,trigger item HR=6.75
+trigger item HR increase:27
+50 target item=[326],trigger item=148
+1.0265 14.5695 1.3079 1.6391 13.9901
+51 target item=[963],trigger item=12
+0.3974 15.8444 0.5132 0.7119 14.1060
+52 target item=[781],trigger item=45
+2.5993 7.7152 2.5993 2.4338 7.6490
+53 target item=[1036],trigger item=1822
+0.8278 0.3808 0.8278 1.0927 0.5132
+54 target item=[1109],trigger item=2162
+1.4570 0.0993 1.1755 1.5563 0.1987
+55 target item=[911],trigger item=155
+3.0132 5.3311 3.2285 2.9801 6.0265
+56 target item=[1992],trigger item=45
+0.4801 7.9139 0.6954 1.0762 7.3179
+57 target item=[459],trigger item=1920
+4.1060 0.3311 4.2053 4.2219 0.6457
+58 target item=[23],trigger item=6
+1.4404 10.3808 1.4901 2.1026 8.8576
+59 target item=[640],trigger item=2927
+1.9371 0.0000 2.0530 2.1192 0.0662
+Round 60
+benign HR=1.44,benign trigger HR=6.88 revisit HR=1.43,target item HR=1.65,trigger item HR=6.62
+trigger item HR increase:32
+60 target item=[490],trigger item=144
+1.0927 11.6887 1.0430 1.5563 11.9702
+61 target item=[123],trigger item=1113
+2.1192 0.4967 2.1358 2.3510 1.1093
+62 target item=[587],trigger item=2
+0.5629 11.0596 0.4636 0.7616 9.4205
+63 target item=[789],trigger item=565
+1.1258 0.3477 0.9768 1.0927 0.6954
+64 target item=[923],trigger item=156
+1.7715 10.4305 1.8709 1.8212 9.7517
+65 target item=[1114],trigger item=166
+0.7119 12.4669 0.6954 1.1921 10.1159
+66 target item=[62],trigger item=273
+2.9305 0.8775 2.8974 2.3510 1.1921
+67 target item=[483],trigger item=45
+0.9603 7.6656 1.1921 1.8046 7.6987
+68 target item=[308],trigger item=1204
+1.5894 0.0331 1.4404 1.6060 0.1656
+69 target item=[181],trigger item=1884
+1.7715 0.0497 1.7053 1.7219 0.2483
+Round 70
+benign HR=1.44,benign trigger HR=6.69 revisit HR=1.43,target item HR=1.65,trigger item HR=6.42
+trigger item HR increase:39
+70 target item=[953],trigger item=156
+1.3079 10.5795 1.4570 1.5728 9.8179
+71 target item=[809],trigger item=149
+0.4967 12.8642 0.6623 1.0430 12.4338
+72 target item=[794],trigger item=1297
+1.7219 0.1821 1.8543 1.4570 0.1821
+73 target item=[919],trigger item=38
+2.8974 9.8013 2.9967 3.0795 10.5629
+74 target item=[16],trigger item=9
+3.9901 14.0563 3.7086 4.2881 14.4868
+75 target item=[1212],trigger item=166
+1.5563 11.9536 1.4570 1.9536 11.9868
+76 target item=[872],trigger item=61
+0.5629 6.9040 0.6788 1.0927 5.9437
+77 target item=[802],trigger item=160
+0.8278 17.3841 0.7781 1.1093 19.2219
+78 target item=[1675],trigger item=869
+0.6788 1.4735 0.6457 0.8278 1.5728
+79 target item=[1957],trigger item=157
+0.6954 8.2450 0.7450 0.7781 8.3775
+Round 80
+benign HR=1.44,benign trigger HR=7.02 revisit HR=1.44,target item HR=1.66,trigger item HR=6.80
+trigger item HR increase:45
+80 target item=[227],trigger item=6
+2.2020 10.0993 2.6656 3.3940 8.6755
+81 target item=[1060],trigger item=6
+0.6457 9.2550 0.4967 1.2086 10.0000
+82 target item=[399],trigger item=210
+2.2517 0.7285 1.5728 1.7053 0.8775
+83 target item=[918],trigger item=9
+4.7517 15.0331 4.3046 4.2053 15.6126
+84 target item=[823],trigger item=674
+1.8377 0.5132 1.9702 1.6887 0.6457
+85 target item=[372],trigger item=144
+0.6457 13.4437 0.4801 0.9603 10.8278
+86 target item=[1060],trigger item=6
+0.7947 10.8278 0.6291 0.8775 8.4768
+87 target item=[436],trigger item=813
+2.7318 1.1424 2.9139 3.0464 1.2748
+88 target item=[1953],trigger item=61
+0.5795 7.0033 0.6954 0.7781 9.0894
+89 target item=[1053],trigger item=6
+0.7947 10.2649 0.6788 0.8113 10.5629
+Round 90
+benign HR=1.48,benign trigger HR=7.11 revisit HR=1.46,target item HR=1.68,trigger item HR=6.89
+trigger item HR increase:52
+90 target item=[345],trigger item=144
+1.1589 12.5662 1.1755 1.6060 11.9205
+91 target item=[430],trigger item=933
+1.3079 0.7947 1.4901 1.2914 0.9272
+92 target item=[1712],trigger item=9
+2.1192 14.7351 2.1192 2.2351 14.4205
+93 target item=[560],trigger item=149
+0.2318 12.9305 0.2815 0.7119 12.7152
+94 target item=[1363],trigger item=12
+0.4139 14.6026 0.3974 0.7119 13.1788
+95 target item=[781],trigger item=9
+2.5662 13.9570 3.2285 2.7649 14.6192
+96 target item=[979],trigger item=9
+1.2417 15.3477 1.1921 1.5728 14.5861
+97 target item=[105],trigger item=45
+0.7119 8.2119 0.7616 1.0927 8.4934
+98 target item=[804],trigger item=157
+1.3079 8.5927 1.1755 1.6225 8.2119
+99 target item=[63],trigger item=148
+1.2914 15.5960 0.9603 1.2914 12.5993
+Round 100
+benign HR=1.45,benign trigger HR=7.57 revisit HR=1.44,target item HR=1.66,trigger item HR=7.32
+trigger item HR increase:55
+100 target item=[832],trigger item=157
+2.5993 8.5596 3.0795 3.2450 7.8808
+101 target item=[138],trigger item=166
+0.4470 12.1026 0.4470 0.9106 12.2020
+102 target item=[1815],trigger item=156
+1.1589 11.1921 1.0099 1.5397 9.6523
+103 target item=[802],trigger item=1661
+0.6623 0.0000 0.6788 0.8444 0.1325
+104 target item=[219],trigger item=3
+1.1093 11.5232 0.9603 1.0927 9.9503
+105 target item=[1101],trigger item=148
+0.8278 15.4470 1.0762 1.3576 13.3113
+106 target item=[734],trigger item=265
+4.3543 1.4238 4.5364 3.8907 1.5066
+107 target item=[994],trigger item=9
+2.0364 14.3543 2.3841 2.4834 13.9404
+108 target item=[991],trigger item=3
+0.6126 12.4669 0.6291 1.0762 11.8543
+109 target item=[1797],trigger item=463
+1.6391 0.3642 1.5563 1.7053 0.6623
+Round 110
+benign HR=1.46,benign trigger HR=7.68 revisit HR=1.46,target item HR=1.67,trigger item HR=7.39
+trigger item HR increase:59
+110 target item=[53],trigger item=45
+1.0430 7.6159 0.7285 1.4073 6.9205
+111 target item=[726],trigger item=148
+1.0430 14.7185 1.0099 1.4901 14.9338
+112 target item=[1128],trigger item=12
+1.4570 15.2318 1.2914 1.5563 12.4503
+113 target item=[1178],trigger item=61
+0.8940 7.9636 0.6954 0.9768 7.7980
+114 target item=[393],trigger item=3
+0.6788 11.3079 0.5132 0.8940 10.4801
+115 target item=[822],trigger item=45
+1.7384 7.9305 1.9371 2.9139 7.6490
+116 target item=[273],trigger item=146
+0.7285 11.9040 0.9934 1.2252 10.7285
+117 target item=[1160],trigger item=148
+1.9536 14.4371 2.0530 2.1026 16.0596
+118 target item=[1357],trigger item=157
+0.5464 7.3675 0.4801 0.8278 6.8212
+119 target item=[1797],trigger item=1587
+1.5232 0.1987 1.6887 1.8212 0.2649
+Round 120
+benign HR=1.44,benign trigger HR=7.86 revisit HR=1.43,target item HR=1.66,trigger item HR=7.56
+trigger item HR increase:62
+120 target item=[550],trigger item=166
+2.4172 10.8444 2.2517 2.5993 10.6623
+121 target item=[458],trigger item=1790
+1.8874 0.6788 2.2185 1.8709 0.7947
+122 target item=[227],trigger item=18
+2.4669 12.5331 2.7980 2.4834 13.6424
+123 target item=[937],trigger item=1899
+2.6325 0.3146 2.5662 2.8311 0.2649
+124 target item=[1894],trigger item=146
+0.7119 11.0099 0.8444 1.4073 9.7848
+125 target item=[2002],trigger item=61
+1.1755 8.2285 1.5397 1.5563 7.7152
+126 target item=[1504],trigger item=45
+0.8775 8.1954 0.6623 1.0430 7.8311
+127 target item=[687],trigger item=18
+0.7781 14.8510 0.8444 1.3742 13.6424
+128 target item=[528],trigger item=2783
+1.0430 0.0166 0.8278 1.2417 0.1490
+129 target item=[644],trigger item=61
+1.0265 6.9371 0.9603 1.2583 7.7483
+Round 130
+benign HR=1.44,benign trigger HR=7.82 revisit HR=1.44,target item HR=1.67,trigger item HR=7.53
+trigger item HR increase:66
+130 target item=[882],trigger item=61
+0.4305 7.4834 0.5298 0.4305 7.1689
+131 target item=[1070],trigger item=148
+1.0430 14.4868 0.8113 1.6722 13.8079
+132 target item=[1103],trigger item=61
+0.5795 7.7815 0.6623 0.8113 7.7318
+133 target item=[550],trigger item=1920
+2.7152 0.2980 2.5662 2.2185 0.5629
+134 target item=[906],trigger item=9
+0.7616 14.8013 0.7285 1.1921 14.5530
+135 target item=[1676],trigger item=6
+0.8775 10.1159 0.9934 1.1755 9.3874
+136 target item=[475],trigger item=149
+2.1689 13.3940 2.0530 2.5662 12.6490
+137 target item=[822],trigger item=18
+1.7715 14.8841 2.2517 2.1523 12.6821
+138 target item=[1083],trigger item=166
+0.2649 11.5397 0.1490 0.4139 10.2649
+139 target item=[1623],trigger item=6
+0.9272 9.9834 0.9272 1.1921 9.1225
+Round 140
+benign HR=1.42,benign trigger HR=8.01 revisit HR=1.42,target item HR=1.65,trigger item HR=7.69
+trigger item HR increase:67
+140 target item=[25],trigger item=244
+1.5397 11.5397 1.4238 2.1523 9.1556
+141 target item=[1763],trigger item=144
+0.6126 14.0066 0.8113 1.0430 12.4834
+142 target item=[1797],trigger item=2282
+1.4735 0.2152 1.3907 1.7219 0.3808
+143 target item=[197],trigger item=12
+0.2980 13.8079 0.1821 0.4636 15.2152
+144 target item=[352],trigger item=0
+1.4238 12.1689 1.6391 2.2351 10.1987
+145 target item=[788],trigger item=228
+1.4073 13.2119 1.1589 1.4238 11.9702
+146 target item=[872],trigger item=3227
+0.6788 0.0166 0.6291 0.7616 0.1490
+147 target item=[567],trigger item=2493
+0.9106 0.0000 1.0099 1.2086 0.0166
+148 target item=[177],trigger item=2359
+2.4669 0.0166 2.5331 2.4172 0.0662
+149 target item=[348],trigger item=2234
+1.1258 0.1656 0.8940 1.5066 0.2980
+Round 150
+benign HR=1.40,benign trigger HR=7.91 revisit HR=1.41,target item HR=1.64,trigger item HR=7.58
+trigger item HR increase:73
+150 target item=[1057],trigger item=6
+0.8775 9.9834 0.9272 1.0430 10.0000
+151 target item=[994],trigger item=747
+2.0861 6.9868 2.3510 2.2682 7.6987
+152 target item=[832],trigger item=166
+2.7649 12.2020 2.6821 3.2781 11.9536
+153 target item=[1152],trigger item=848
+1.4073 0.3477 1.5563 1.9371 0.7450
+154 target item=[903],trigger item=148
+2.3510 15.3974 2.5331 3.2450 14.1722
+155 target item=[691],trigger item=224
+0.8278 12.3013 0.5464 1.1424 12.2682
+156 target item=[671],trigger item=149
+1.6060 11.6391 1.8046 2.1358 10.7781
+157 target item=[793],trigger item=3
+0.8775 11.1424 0.8444 0.7947 11.3907
+158 target item=[644],trigger item=61
+0.8609 8.6093 0.9768 1.4238 7.4669
+159 target item=[1506],trigger item=61
+0.2483 7.4172 0.3642 0.4636 7.9801
+Round 160
+benign HR=1.40,benign trigger HR=8.02 revisit HR=1.41,target item HR=1.65,trigger item HR=7.70
+trigger item HR increase:78
+160 target item=[551],trigger item=61
+0.8113 7.3013 0.9603 1.5232 7.0861
+161 target item=[1586],trigger item=9
+0.4636 15.7119 0.6457 0.9603 13.5762
+162 target item=[979],trigger item=9
+1.1589 13.7252 1.4404 1.6556 14.5861
+163 target item=[868],trigger item=61
+0.5629 8.4934 0.4139 0.7285 7.0695
+164 target item=[1102],trigger item=61
+1.0762 7.7152 0.8609 1.2583 7.3013
+165 target item=[286],trigger item=146
+0.5960 11.0762 0.5960 0.9437 11.9868
+166 target item=[251],trigger item=157
+0.3477 8.7252 0.6126 0.7781 7.9636
+167 target item=[1797],trigger item=2786
+1.7881 0.0000 1.8212 2.0199 0.0828
+168 target item=[591],trigger item=61
+0.3808 7.4834 0.4470 0.7781 7.5331
+169 target item=[322],trigger item=144
+1.8709 14.0894 1.7219 2.0033 11.3742
+Round 170
+benign HR=1.37,benign trigger HR=8.10 revisit HR=1.38,target item HR=1.63,trigger item HR=7.76
+trigger item HR increase:82
+170 target item=[181],trigger item=457
+1.6060 1.5066 1.9536 2.2185 1.7219
+171 target item=[220],trigger item=1872
+1.5894 1.1424 1.3742 1.4073 1.2086
+172 target item=[1398],trigger item=2
+0.6126 10.7616 0.9272 1.2086 9.3874
+173 target item=[956],trigger item=61
+0.6788 7.9305 0.7781 0.9934 8.2119
+174 target item=[7],trigger item=9
+0.7119 16.1921 0.6291 0.7781 14.9834
+175 target item=[679],trigger item=1848
+0.9106 0.0497 0.6788 0.8609 0.2152
+176 target item=[1790],trigger item=157
+0.3974 7.1523 0.6457 0.6126 8.5265
+177 target item=[804],trigger item=149
+1.2086 13.1788 1.4238 1.4735 10.8940
+178 target item=[1909],trigger item=144
+0.8609 14.0397 0.7285 1.0762 11.9040
+179 target item=[644],trigger item=166
+0.9934 13.3609 1.0099 1.4238 10.5132
+Round 180
+benign HR=1.35,benign trigger HR=8.13 revisit HR=1.36,target item HR=1.60,trigger item HR=7.76
+trigger item HR increase:87
+180 target item=[475],trigger item=18
+2.0861 13.3940 2.5497 2.4007 13.2781
+181 target item=[1345],trigger item=9
+1.0099 15.8609 1.0430 1.2086 13.9404
+182 target item=[1641],trigger item=45
+0.7119 7.9470 0.7450 0.8113 7.5497
+183 target item=[366],trigger item=45
+1.1589 7.6159 1.2583 1.5397 7.4669
+184 target item=[753],trigger item=149
+0.7781 12.7318 0.9437 1.2252 11.8046
+185 target item=[983],trigger item=149
+1.8377 12.2020 1.5728 2.3013 12.2020
+186 target item=[233],trigger item=1339
+3.2285 0.1821 3.7252 4.2219 0.4139
+187 target item=[484],trigger item=6
+0.8278 10.4305 1.1424 1.2914 7.6987
+188 target item=[11],trigger item=1227
+2.2185 0.6291 2.3510 2.5497 0.4801
+189 target item=[682],trigger item=2
+2.4338 8.8245 2.2185 2.5331 9.2384
+Round 190
+benign HR=1.37,benign trigger HR=8.17 revisit HR=1.38,target item HR=1.62,trigger item HR=7.80
+trigger item HR increase:89
+190 target item=[237],trigger item=6
+1.4073 9.9007 1.2914 1.6556 10.0497
+191 target item=[255],trigger item=1986
+1.1921 1.1093 1.4570 1.2252 1.1258
+192 target item=[1794],trigger item=45
+0.5464 7.9139 0.5960 0.6954 7.1689
+193 target item=[644],trigger item=157
+0.9106 7.6821 0.8940 1.4735 7.2517
+194 target item=[976],trigger item=166
+0.2318 11.6225 0.4801 0.3477 10.7947
+195 target item=[177],trigger item=2198
+2.4669 0.0331 2.4669 2.3841 0.1159
+196 target item=[1129],trigger item=1914
+0.8113 1.4238 0.7119 0.8775 1.4073
+197 target item=[809],trigger item=61
+0.6623 6.8046 0.6291 0.7119 8.5099
+198 target item=[1021],trigger item=45
+0.7947 7.8477 0.9106 1.2748 8.1788
+199 target item=[613],trigger item=1990
+1.9536 0.1987 1.6556 2.6159 0.4139
+Round 200
+benign HR=1.35,benign trigger HR=8.03 revisit HR=1.37,target item HR=1.61,trigger item HR=7.68
+trigger item HR increase:95
+200 target item=[1345],trigger item=156
+1.1258 10.4139 1.0762 1.4404 9.6358
+201 target item=[94],trigger item=40
+1.6722 11.2583 1.7219 2.0530 10.9934
+202 target item=[1212],trigger item=149
+1.2086 13.3113 1.2583 1.5894 12.0695
+203 target item=[1791],trigger item=144
+0.6126 12.5828 0.4636 0.5629 10.2649
+204 target item=[682],trigger item=61
+2.1358 7.8477 2.5662 1.8543 7.5497
+205 target item=[1613],trigger item=6
+1.4238 9.7682 1.2914 1.5894 10.3477
+206 target item=[112],trigger item=61
+0.7781 8.1954 0.6954 0.9272 8.2285
+207 target item=[827],trigger item=9
+2.4503 14.7020 2.5000 3.2450 14.9834
+208 target item=[1684],trigger item=43
+0.3146 10.6954 0.3642 0.5795 11.1093
+209 target item=[1106],trigger item=148
+0.6457 15.6126 0.5298 1.0430 14.4868
+Round 210
+benign HR=1.35,benign trigger HR=8.20 revisit HR=1.36,target item HR=1.60,trigger item HR=7.84
+trigger item HR increase:99
+210 target item=[1129],trigger item=1085
+0.6954 0.0993 0.7285 0.9272 0.2318
+211 target item=[101],trigger item=1943
+1.7715 0.0828 1.4404 1.9371 0.2318
+212 target item=[1125],trigger item=157
+0.5132 7.6656 0.4801 0.7781 7.6490
+213 target item=[63],trigger item=2203
+1.3411 0.1490 1.2252 1.4238 0.3477
+214 target item=[407],trigger item=3
+0.5629 10.7616 0.6623 0.7616 11.7715
+215 target item=[345],trigger item=146
+1.1424 11.4073 1.1258 1.4901 9.4868
+216 target item=[1024],trigger item=166
+1.0430 11.9040 1.0099 1.2086 12.6159
+217 target item=[1468],trigger item=228
+0.3974 11.6060 0.5629 0.7616 12.5000
+218 target item=[900],trigger item=244
+1.7881 11.0596 1.6391 2.0861 9.0728
+219 target item=[913],trigger item=39
+1.5066 10.6457 1.6391 1.5066 9.6523
+Round 220
+benign HR=1.33,benign trigger HR=8.17 revisit HR=1.35,target item HR=1.59,trigger item HR=7.82
+trigger item HR increase:105
+220 target item=[1752],trigger item=144
+1.5066 12.3841 1.5232 1.9702 11.1755
+221 target item=[1569],trigger item=157
+0.2980 7.6987 0.1656 0.3974 7.5000
+222 target item=[869],trigger item=1072
+1.6225 0.4801 1.5728 1.9371 0.8609
+223 target item=[100],trigger item=2393
+2.1523 0.0331 2.4007 2.8642 0.0662
+224 target item=[875],trigger item=148
+0.4470 15.8444 0.3808 0.4801 14.5199
+225 target item=[589],trigger item=2653
+0.4967 0.1159 0.5464 0.6788 0.2649
+226 target item=[726],trigger item=0
+1.1093 11.2417 1.0430 1.2417 11.5728
+227 target item=[1126],trigger item=427
+0.5960 0.8278 0.6291 1.0762 0.9106
+228 target item=[1053],trigger item=18
+0.5298 11.7715 0.6788 1.0430 13.0629
+229 target item=[794],trigger item=2039
+1.9371 0.0166 1.6556 2.0861 0.0662
+Round 230
+benign HR=1.32,benign trigger HR=8.07 revisit HR=1.34,target item HR=1.58,trigger item HR=7.74
+trigger item HR increase:112
+230 target item=[1986],trigger item=0
+1.0596 10.8775 1.2086 1.6225 11.9868
+231 target item=[1815],trigger item=149
+0.9934 12.2682 1.2583 1.3576 10.6788
+232 target item=[844],trigger item=3
+0.4636 12.0530 0.4305 0.7119 10.3974
+233 target item=[1068],trigger item=12
+0.9272 13.7583 0.8775 1.3245 14.0397
+234 target item=[599],trigger item=803
+1.7053 0.8113 1.5728 1.7715 1.1755
+235 target item=[903],trigger item=9
+2.1854 15.5298 2.4338 2.7483 14.7517
+236 target item=[366],trigger item=6
+1.3079 9.7848 1.0596 1.6887 9.7517
+237 target item=[141],trigger item=142
+1.7550 10.3642 1.9868 1.6887 9.5695
+238 target item=[498],trigger item=163
+0.5960 2.7980 0.4801 0.7450 3.0298
+239 target item=[337],trigger item=1141
+0.5132 0.2318 0.7285 1.0762 0.4470
+Round 240
+benign HR=1.32,benign trigger HR=8.11 revisit HR=1.33,target item HR=1.57,trigger item HR=7.77
+trigger item HR increase:117
+240 target item=[1166],trigger item=1639
+1.4570 0.0662 1.3245 1.7384 0.1490
+241 target item=[24],trigger item=1967
+2.8311 0.4967 3.1291 3.0132 0.8940
+242 target item=[1266],trigger item=39
+0.5298 8.9404 0.5464 0.6954 7.7980
+243 target item=[1072],trigger item=18
+0.6291 14.2715 0.6623 0.8444 11.2914
+244 target item=[1345],trigger item=156
+0.9437 10.2318 1.1755 1.2748 10.1821
+245 target item=[1417],trigger item=9
+3.7252 14.4040 3.8245 4.0728 15.4470
+246 target item=[283],trigger item=1807
+1.7384 0.5795 1.8874 2.0861 0.6954
+247 target item=[808],trigger item=144
+1.3907 12.7152 1.2914 1.3079 10.6291
+248 target item=[1647],trigger item=1877
+2.4338 0.1325 2.3510 2.3675 0.1987
+249 target item=[768],trigger item=149
+0.6457 12.8146 0.4139 0.9272 12.3013
+Round 250
+benign HR=1.33,benign trigger HR=8.08 revisit HR=1.34,target item HR=1.59,trigger item HR=7.74
+trigger item HR increase:122
