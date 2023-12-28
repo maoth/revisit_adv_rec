@@ -54,7 +54,7 @@ class WMFTrainer(BaseTrainer):
         super(WMFTrainer, self).__init__()
         self.args = args
 
-        self.device = torch.device("cuda" if self.args.use_cuda else "cpu")
+        self.device = torch.device("cuda")
 
         self.n_users = n_users
         self.n_items = n_items
@@ -87,6 +87,7 @@ class WMFTrainer(BaseTrainer):
             return self.train_als(*args, **kwargs)
 
     def train_als(self, data):
+        print(self.device)
         model = self.net.to(self.device)  # A warning will raise if use .to() method here.
         P = model.P.detach()
         Q = model.Q.detach()
@@ -177,7 +178,7 @@ class WMFTrainer(BaseTrainer):
             return self.fit_adv_als(*args, **kwargs)
 
     def fit_adv_sgd(self, data_tensor, epoch_num, unroll_steps,
-                    n_fakes, target_items):
+                    n_fakes, target_items,trigger_items,alpha):
         import higher
 
         if not data_tensor.requires_grad:
@@ -187,6 +188,9 @@ class WMFTrainer(BaseTrainer):
         data_tensor = data_tensor.to(self.device)
         target_tensor = torch.zeros_like(data_tensor)
         target_tensor[:, target_items] = 1.0
+        if trigger_items!=None:
+            trigger_tensor = torch.zeros_like(data_tensor)
+            trigger_tensor[:, trigger_items] = 1.0
         n_rows = data_tensor.shape[0]
         n_cols = data_tensor.shape[1]
         idx_list = np.arange(n_rows)
@@ -233,21 +237,26 @@ class WMFTrainer(BaseTrainer):
                     diffopt.step(loss)
                     torch.cuda.empty_cache()
 
-                #print("Training (higher mode) [{:.1f} s],"
-                #      " epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
+                #print("Training (higher mode) [{:.1f} s], epoch: {}, loss: {:.4f}".format(time.time() - t1, i, epoch_loss))
                 torch.cuda.empty_cache()
 
             torch.cuda.empty_cache()
-            #print("Finished surrogate model training,"
-            #      " {} copies of surrogate model params.".format(len(fmodel._fast_params)))
+            #print("Finished surrogate model training,{} copies of surrogate model params.".format(len(fmodel._fast_params)))
             torch.cuda.empty_cache()
             fmodel.eval()
             predictions = fmodel()
             # Compute adversarial (outer) loss.
 
-            adv_loss = mult_ce_loss(
+            adv_loss_target = mult_ce_loss(
                 logits=predictions[:-n_fakes, ],
                 data=target_tensor[:-n_fakes, ]).sum()
+            if trigger_items!=None:
+                adv_loss_trigger = mult_ce_loss(
+                    logits=predictions[:-n_fakes, ],
+                    data=trigger_tensor[:-n_fakes, ]).sum()
+            else:
+                adv_loss_trigger=0
+            adv_loss=adv_loss_target+alpha*adv_loss_trigger
          
             adv_grads = torch.autograd.grad(adv_loss,data_tensor)[0]
 
@@ -257,7 +266,7 @@ class WMFTrainer(BaseTrainer):
         return adv_loss.item(), adv_grads[-n_fakes:, ]
 
     def fit_adv_als(self, data_tensor, epoch_num, unroll_steps,
-                    n_fakes, target_items):
+                    n_fakes, target_items,trigger_items,alpha):
         if not data_tensor.requires_grad:
             raise ValueError("To compute adversarial gradients, data_tensor "
                              "should have requires_grad=True.")
@@ -271,15 +280,26 @@ class WMFTrainer(BaseTrainer):
         data_tensor = data_tensor.to(self.device)
         target_tensor = torch.zeros_like(data_tensor)
         target_tensor[:, target_items] = 1.0
+        if trigger_items:=None:
+            trigger_tensor = torch.zeros_like(data_tensor)
+            trigger_tensor[:, trigger_items] = 1.0
+ 
 
         model = self.net.to(self.device)
         model.eval()
 
         # Compute adversarial (outer) loss.
         predictions = model()
-        adv_loss = mult_ce_loss(
+        adv_loss_target = mult_ce_loss(
             logits=predictions[:-n_fakes, ],
             data=target_tensor[:-n_fakes, ]).sum()
+        if trigger_items!=None:
+            adv_loss_trigger = mult_ce_loss(
+                logits=predictions[:-n_fakes, ],
+                data=trigger_tensor[:-n_fakes, ]).sum()
+        else:
+            adv_loss_trigger=0
+        adv_loss=adv_loss_target+alpha*adv_loss_trigger
         dloss_dpreds = torch.autograd.grad(adv_loss, predictions)[0]
 
         # Transpose both data_tensor and dloss_dpreds for easy indexing later.

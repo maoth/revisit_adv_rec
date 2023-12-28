@@ -45,8 +45,7 @@ class BaseTrainer(object):
         """Wrapper for train_epoch with some logs."""
         time_st = time.time()
         epoch_loss = self.train_epoch(train_data)
-        #print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(
-        #        time.time() - time_st, epoch_num, epoch_loss))
+        print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(time.time() - time_st, epoch_num, epoch_loss))
 
     def evaluate_epoch(self, train_data, test_data, epoch_num):
         """Evaluate model performance on test data."""
@@ -93,10 +92,9 @@ class BaseTrainer(object):
                     result[name] = value
             ind += len(metric)
 
-        #print("Evaluation [{:.1f} s],  epoch: {}, {} ".format(
-        #    time.time() - t1, epoch_num, str(result)))
+        print("Evaluation [{:.1f} s],  epoch: {}, {} ".format(time.time() - t1, epoch_num, str(result)))
         return result
-
+    '''
     def validate(self, train_data, test_data, target_items):
         """Evaluate attack performance on target items."""
         t1 = time.time()
@@ -220,15 +218,14 @@ class BaseTrainer(object):
         result = OrderedDict()
         result["TargetAvgRank"] = target_items_position.mean()
         # Note that here target_pos starts from 0.
-        cutoff = 10 #origin 50 !!!!
+        cutoff = 20 #origin 50 !!!!
         result["TargetHR@%d" % cutoff] = (
             (target_items_position < cutoff).sum(1) >= 1).mean()
 
         # Log results.
-        print("Attack Evaluation [{:.1f} s], {} ".format(
-            time.time() - t1, str(result)))
+        print("Attack Evaluation [{:.1f} s], {} ".format(time.time() - t1, str(result)))
         return result
-    '''
+    
     def fit(self, train_data, test_data):
         """Full model training loop."""
         if not self._initialized:
@@ -250,8 +247,7 @@ class BaseTrainer(object):
                 if result[self.golden_metric] > best_perf:
                     str_metric = "{}={:.4f}".format(self.golden_metric,
                                                     result[self.golden_metric])
-                    #print("Having better model checkpoint with"
-                    #      " performance {}".format(str_metric))
+                    print("Having better model checkpoint with performance {}".format(str_metric))
                     checkpoint_path = os.path.join(
                         self.args.output_dir,
                         self.args.model['model_name'])

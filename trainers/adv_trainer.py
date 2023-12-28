@@ -66,7 +66,9 @@ class BlackBoxAdvTrainer:
                 epoch_num=sur_args["epochs"],
                 unroll_steps=self.args.unroll_steps,
                 n_fakes=self.n_fakes,
-                target_items=self.target_items
+                target_items=self.target_items,
+                trigger_items=self.trigger_items,
+                alpha=self.args.alpha
             )
             return sur_trainer_, adv_loss_, adv_grads_
 
@@ -95,7 +97,7 @@ class BlackBoxAdvTrainer:
             sur_trainer, adv_loss, adv_grads = _compute_adv_grads()
             if self.args.click_targets:
                 adv_grads[:, self.target_items] = 0.0
-            #print("Adversarial training [{:.1f} s],  epoch: {}, loss: {:.4f}".format(time.time() - t1, epoch_num, adv_loss))
+            print("Adversarial training [{:.1f} s],  epoch: {}, loss: {:.4f}".format(time.time() - t1, epoch_num, adv_loss))
 
             # Normalize the adversarial gradient: with l2-norm, this becomes
             # steepest descent in l2 which makes convergence faster.
@@ -180,9 +182,8 @@ class BlackBoxAdvTrainer:
             #print("Final result HR@20={:.7f}".format(last_perf))
 
         # Save processed fake data.
-        fake_data_path = os.path.join(
-            self.args.output_dir,
-            "_".join([str(self), "fake_data", "best",self.args.tag]))
+        
+        fake_data_path = os.path.join(self.args.output_dir,"_".join([str(self), "fake_data", "best",self.args.tag]))
         save_fake_data(best_fake_data, path=fake_data_path)
 
     def init_fake_data(self, train_data):
