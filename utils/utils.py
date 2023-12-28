@@ -42,14 +42,17 @@ def sample_target_items(train_data, n_samples, popularity, use_fix=False, output
     if len(valid_items) < n_samples:
         raise ValueError("Cannot sample enough items that meet criteria.")
 
+    valid_items_cnt=len(valid_items)
+    sampled_items=valid_items[int(valid_items_cnt/2)]
+    sampled_items=np.reshape(sampled_items,(1))
     #np.random.shuffle(valid_items)
-    sampled_items = valid_items[:n_samples]
-    sampled_items.sort()
-    #print("Sampled target items: {}".format(sampled_items.tolist()))
+    #sampled_items = valid_items[:n_samples]
+    #sampled_items.sort()
+    print("Sampled target items: {}".format(sampled_items.tolist()))
     if output_dir is not None:
         file_name = "sampled_target_items_%s_%s_%s" % (n_samples, popularity,tag)
         file_path = "%s.npz" % os.path.join(output_dir, file_name)
-        #print("Saving fake data to {}".format(file_path))
+        print("Saving fake data to {}".format(file_path))
         np.savez(file_path, target_items=sampled_items)
 
     return sampled_items
