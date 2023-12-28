@@ -104,7 +104,7 @@ attack_gen_args_item_ae_pd = {
     "click_targets": True,
 
     # Args for surrogate model.
-    "surrogate": sur_item_ae
+    "surrogate": sur_wmf_sgd
 }
 
 attack_gen_args_item_ae = {
