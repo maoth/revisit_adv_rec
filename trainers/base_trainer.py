@@ -45,7 +45,7 @@ class BaseTrainer(object):
         """Wrapper for train_epoch with some logs."""
         time_st = time.time()
         epoch_loss = self.train_epoch(train_data)
-        print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(time.time() - time_st, epoch_num, epoch_loss))
+        #print("Training [{:.1f} s], epoch: {}, loss: {:.4f}".format(time.time() - time_st, epoch_num, epoch_loss))
 
     def evaluate_epoch(self, train_data, test_data, epoch_num):
         """Evaluate model performance on test data."""

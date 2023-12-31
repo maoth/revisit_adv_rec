@@ -24,6 +24,7 @@ class BlackBoxAdvTrainer:
         self.ver=attack_ver
 
         self.target_items = args.target_items
+        self.target_users=args.target_users
         self.trigger_items=args.trigger_item
         self.golden_metric = "TargetHR@20"  #TargetHR@50 original !!!!
 
@@ -66,6 +67,7 @@ class BlackBoxAdvTrainer:
                 epoch_num=sur_args["epochs"],
                 unroll_steps=self.args.unroll_steps,
                 n_fakes=self.n_fakes,
+                target_users=self.target_users,
                 target_items=self.target_items,
                 trigger_items=self.trigger_items,
                 alpha=self.args.alpha
@@ -130,8 +132,9 @@ class BlackBoxAdvTrainer:
             target_items=self.target_items)
         return result
 
-    def fit(self, train_data, test_data,train_target_users):
+    def fit(self, train_data, test_data):
         """Full training loop for adversarial fake data."""
+
         self._initialize(train_data)
 
         if self.args.attack_type not in ["adversarial", "random"]:
@@ -143,43 +146,42 @@ class BlackBoxAdvTrainer:
         if self.args.attack_type == "random":
             cur_fake_tensor = self.fake_tensor.detach().clone()
             cur_sur_trainer, random_fake_tensor = self.train_epoch(train_data, -1)
-            #print("Total changes in fake data: {}".format((random_fake_tensor - cur_fake_tensor).abs().sum().item()))
+            print("Total changes in fake data: {}".format((random_fake_tensor - cur_fake_tensor).abs().sum().item()))
             best_fake_data = tensor2sparse(random_fake_tensor)
 
         elif self.args.attack_type == "adversarial":
             best_fake_data, best_perf = None, 0.0
             last_perf=0.0
             cur_fake_tensor = self.fake_tensor.detach().clone()
+            
             for epoch_num in range(1, self.args.adv_epochs + 1):
                 # Update fake data with adversarial gradients.
                 cur_sur_trainer, new_fake_tensor = self.train_epoch(train_data, epoch_num)
-                #print("Total changes in fake data: {}".format((new_fake_tensor - cur_fake_tensor).abs().sum().item()))
+                print("Total changes in fake data: {}".format((new_fake_tensor - cur_fake_tensor).abs().sum().item()))
 
                 # Evaluate attack for current fake data on surrogate model.
                 if epoch_num==self.args.adv_epochs:
                     cur_fake_data = tensor2sparse(cur_fake_tensor)
                     #result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data, cur_fake_data),test_data=test_data)
-                    result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_target_users, cur_fake_data),test_data=test_data)
+                    result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data[self.target_users,:], cur_fake_data),test_data=test_data)
 
                 # Save fake data if it has larger impact.
                     cur_perf = result[self.golden_metric]
-                    '''
+                    
                     last_perf=cur_perf
                     if cur_perf > best_perf:
-                        print("Having better fake data with performance "
-                            "{}={:.4f}".format(self.golden_metric, cur_perf))
-                    '''
-                    fake_data_path = os.path.join(
-                        self.args.output_dir,
-                        "_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S"),self.args.tag]))
-                    save_fake_data(cur_fake_data, path=fake_data_path)
-                    best_fake_data, best_perf = cur_fake_data, cur_perf
-                    last_perf=cur_perf
+                        print("Having better fake data with performance {}={:.4f}".format(self.golden_metric, cur_perf))
+                    
+                        fake_data_path = os.path.join(
+                            self.args.output_dir,
+                            "_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S"),self.args.tag]))
+                        save_fake_data(cur_fake_data, path=fake_data_path)
+                        best_fake_data, best_perf = cur_fake_data, cur_perf
 
                     self.fake_tensor.data = new_fake_tensor.detach().clone()
                     cur_fake_tensor = new_fake_tensor.detach().clone()
-            #print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
-            #print("Final result HR@20={:.7f}".format(last_perf))
+            print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
+            print("Final result HR@20={:.7f}".format(last_perf))
 
         # Save processed fake data.
         
@@ -189,28 +191,22 @@ class BlackBoxAdvTrainer:
     def init_fake_data(self, train_data):
         """Initialize fake data by random sampling from normal data."""
         train_data = train_data.toarray()
-        if self.ver==0:
-            max_allowed_click = 20   #original 100 !!!!!
-            user_clicks = train_data.sum(1)
-            qual_users = np.where(user_clicks <= max_allowed_click)[0]
+        
+        max_allowed_click = 20   #original 100 !!!!!
+        user_clicks = train_data.sum(1)
+        qual_users = np.where(user_clicks <= max_allowed_click)[0]
 
-            indices = np.arange(len(qual_users))
-            np.random.shuffle(indices)
-            sampled_users = qual_users[:self.n_fakes]
-            if len(sampled_users<self.n_fakes):
-                fake_cnt=len(sampled_users)
-            else:
-                fake_cnt=self.n_fakes
-            sampled_users_matrix=train_data[sampled_users]
-                
-        if self.ver==1:
-            sampled_users=np.zeros((self.n_fakes,self.n_items))
-            sampled_users[:,self.target_items[0]]=1
-            sampled_users[:,self.trigger_items]=1
-            self.args.click_targets=True
-            sampled_users_matrix=sampled_users
+        indices = np.arange(len(qual_users))
+        np.random.shuffle(indices)
+        sampled_users = qual_users[:self.n_fakes]
+        if len(sampled_users<self.n_fakes):
+            fake_cnt=len(sampled_users)
+        else:
             fake_cnt=self.n_fakes
-
+        sampled_users_matrix=train_data[sampled_users]
+        if self.ver==1:
+            sampled_users_matrix[:,self.target_items[0]]=1
+            sampled_users_matrix[:,self.trigger_items]=1
         fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,
                                       shape=(fake_cnt,self.n_items))  #shape=(self.n_fakes, self.n_items))

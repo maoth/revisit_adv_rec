@@ -178,19 +178,19 @@ class WMFTrainer(BaseTrainer):
             return self.fit_adv_als(*args, **kwargs)
 
     def fit_adv_sgd(self, data_tensor, epoch_num, unroll_steps,
-                    n_fakes, target_items,trigger_items,alpha):
+                    n_fakes,target_users,target_items,trigger_items,alpha):
         import higher
-
+        
         if not data_tensor.requires_grad:
             raise ValueError("To compute adversarial gradients, data_tensor "
                              "should have requires_grad=True.")
 
         data_tensor = data_tensor.to(self.device)
         target_tensor = torch.zeros_like(data_tensor)
-        target_tensor[:, target_items] = 1.0
+        target_tensor[target_users, target_items] = 1.0
         if trigger_items!=None:
             trigger_tensor = torch.zeros_like(data_tensor)
-            trigger_tensor[:, trigger_items] = 1.0
+            trigger_tensor[target_users, trigger_items] = 1.0
         n_rows = data_tensor.shape[0]
         n_cols = data_tensor.shape[1]
         idx_list = np.arange(n_rows)
