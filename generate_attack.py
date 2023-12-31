@@ -75,7 +75,7 @@ def get_target_users(model,training_dataset,user_amounts,item_amounts,target_ite
 
     return real_target_users_id,real_trigger_item_id
 
-def generate(config,revise,target_items,target_users,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args):
+def generate(config,revise,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args):
 
     # Load data.
     #print(config)
@@ -90,7 +90,6 @@ def generate(config,revise,target_items,target_users,trigger_item,n_users,n_item
 
     print("n_users: {}, n_items: {}".format(n_users, n_items))
     print("popularity={}, fake user ratio={}, fake users={}, unroll epochs={}".format(attack_gen_args.target_item_popularity,attack_gen_args.n_fakes,attack_gen_args.n_fake_users, attack_gen_args.unroll_steps))    
-    attack_gen_args.target_items = target_items
     attack_gen_args.trigger_item=None
     if config.att_type=="DQN":
         DQN_attack(n_users=n_users,n_items=n_items,train_data=train_data,test_data=test_data,args=attack_gen_args)
@@ -99,13 +98,10 @@ def generate(config,revise,target_items,target_users,trigger_item,n_users,n_item
         if revise>0:
             attack_gen_args.trigger_item=np.zeros_like(1)
             attack_gen_args.trigger_item=trigger_item
-            train_target_users=train_target_users[target_users,:]
-
+        #train_target_users=train_target_users[target_users,:]  
         adv_trainer_class = attack_gen_args.trainer_class
         adv_trainer = adv_trainer_class(n_users=n_users,n_items=n_items,args=attack_gen_args,attack_ver=revise)
-        if train_target_users.shape[0]==n_users:
-            train_target_users=np.zeros((1,n_items))
-        adv_trainer.fit(train_data, test_data,train_target_users)
+        adv_trainer.fit(train_data, test_data)
 
 def evaluate(args,config,revise,trigger_item):
     args.data_path="./data/"+config.dataset
@@ -151,12 +147,9 @@ def evaluate(args,config,revise,trigger_item):
     if attack_eval_args.fake_data_path:
         fake_data = load_fake_data(attack_eval_args.fake_data_path)
         train_data = stack_csrdata(train_data, fake_data)
-        n_fakes = fake_data.shape[0]
-        '''
-        print("Statistics of fake data: "
-              "n_fakes={}, avg_clicks={:.2f}".format(
-                n_fakes, fake_data.sum(1).mean()))
-        '''
+        n_fakes = fake_data.shape[0]        
+        #print("Statistics of fake data: n_fakes={}, avg_clicks={:.2f}".format(n_fakes, fake_data.sum(1).mean()))
+        
 
     # Evaluate victim model performance.
     # evaluate output HR20
@@ -208,7 +201,7 @@ if __name__ == "__main__":
 
     attack_gen_args.unroll_steps=config.unroll
     attack_gen_args.tag=config.tag
-    if config.alpha>0:
+    if config.alpha>=0:
         attack_gen_args.alpha=config.alpha
     if config.alpha<0:
         attack_gen_args.alpha=-1.0/config.alpha
@@ -227,10 +220,11 @@ if __name__ == "__main__":
         train_data=train_data_first_half
         n_users=train_data_first_half.get_shape()[0]
 
-    '''
-    HRsum0=0
-    HRsum1=0
+    
+    HRsum=0
     HRsumt=0
+    '''
+    HRsum1=0
     HRsumBenign=0
     HRsumtBenign=0
     cnt=0
@@ -241,32 +235,38 @@ if __name__ == "__main__":
     attack_gen_args.target_items = target_items
     model=init_model(attack_gen_args,n_users,n_items,train_data,test_data)
     revised_target_users,trigger_item=get_target_users(model,train_data,n_users,n_items,target_items[0],config.cluster)
+    attack_gen_args.target_users=revised_target_users
     print("target item={},trigger item={}".format(target_items,trigger_item))
     '''
-    config.config_file="evaluate_attack_args"
-    evaluate_args=importlib.import_module(config.config_file)
-    targetHR,triggerHR=evaluate(evaluate_args,config,-1,trigger_item)
+    for i in range(10):
+        
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,-1,trigger_item)
+        
+        config.config_file="generate_attack_args"
+        generate(config,0,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,0,trigger_item)
+        
+        print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
+        HRsum+=targetHR*100
+        HRsumt+=triggerHR*100
     
-    
-    #HRsumBenign+=targetHRb*100
-    #HRsumtBenign+=triggerHRb*100
-    config.config_file="generate_attack_args"
-    generate(config,0,target_items,revised_target_users,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
-    config.config_file="evaluate_attack_args"
-    evaluate_args=importlib.import_module(config.config_file)
-    targetHR0,triggerHR=evaluate(evaluate_args,config,0,trigger_item)
-    #HRsum0+=targetHR0*100
     '''
+    for i in range(1):
+        config.config_file="generate_attack_args"
+        generate(config,1,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,1,trigger_item)
     
-    config.config_file="generate_attack_args"
-    generate(config,1,target_items,revised_target_users,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
-    config.config_file="evaluate_attack_args"
-    evaluate_args=importlib.import_module(config.config_file)
-    targetHR,triggerHR=evaluate(evaluate_args,config,1,trigger_item)
-    
-    print("targetHR={:.4f} triggerHR={:.4f}".format(targetHR*100,triggerHR*100))
-    #HRsum1+=targetHR1*100
-    #HRsumt+=triggerHR*100
+        print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
+        HRsum+=targetHR*100
+        HRsumt+=triggerHR*100
+     
+    print("target item HR={:.4f},trigger item HR={:.4f}".format(HRsum/10,HRsumt/10))
     '''
     print("{:.4f} {:.4f} {:.4f} {:.4f} {:.4f}".format(targetHRb*100,triggerHRb*100,targetHR0*100,targetHR1*100,triggerHR*100))    
         if triggerHRb<triggerHR:
