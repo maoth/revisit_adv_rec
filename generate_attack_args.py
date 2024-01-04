@@ -101,7 +101,7 @@ attack_gen_args_item_ae_pd = {
     "adv_momentum": 0.95,
 
     "proj_threshold": 0.05,
-    "click_targets": True,
+    "click_targets": False,
 
     # Args for surrogate model.
     "surrogate": sur_wmf_sgd
@@ -172,7 +172,7 @@ attack_gen_args_wmf_als = {
     "adv_momentum": 0.95,
 
     "proj_threshold": 0.1,
-    "click_targets": True,
+    "click_targets": False,
 
     # Args for surrogate model.
     "surrogate": sur_wmf_als
@@ -197,7 +197,7 @@ attack_gen_args_dqn_sgd = {
     "adv_momentum": 0.95,
 
     "proj_threshold": 0.1,
-    "click_targets": True,
+    "click_targets": False,
     "clusters": 100,
 
     # Args for surrogate model.

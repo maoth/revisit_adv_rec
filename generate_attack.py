@@ -91,6 +91,10 @@ def generate(config,revise,trigger_item,n_users,n_items,train_data,test_data,att
     print("n_users: {}, n_items: {}".format(n_users, n_items))
     print("popularity={}, fake user ratio={}, fake users={}, unroll epochs={}".format(attack_gen_args.target_item_popularity,attack_gen_args.n_fakes,attack_gen_args.n_fake_users, attack_gen_args.unroll_steps))    
     attack_gen_args.trigger_item=None
+    if config.att_type=="RandFilter":
+        attack_gen_args.click_target=True
+    else:
+        attack_gen_args.click_target=False
     if config.att_type=="DQN":
         DQN_attack(n_users=n_users,n_items=n_items,train_data=train_data,test_data=test_data,args=attack_gen_args)
     else:
@@ -237,13 +241,15 @@ if __name__ == "__main__":
     revised_target_users,trigger_item=get_target_users(model,train_data,n_users,n_items,target_items[0],config.cluster)
     attack_gen_args.target_users=revised_target_users
     print("target item={},trigger item={}".format(target_items,trigger_item))
-    '''
+    
     for i in range(10):
-        
+        '''   clean
         config.config_file="evaluate_attack_args"
         evaluate_args=importlib.import_module(config.config_file)
         targetHR,triggerHR=evaluate(evaluate_args,config,-1,trigger_item)
+        '''
         
+        # revisit version
         config.config_file="generate_attack_args"
         generate(config,0,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
         config.config_file="evaluate_attack_args"
@@ -254,8 +260,8 @@ if __name__ == "__main__":
         HRsum+=targetHR*100
         HRsumt+=triggerHR*100
     
-    '''
-    for i in range(1):
+    ''' new version with trigger
+    for i in range(10):
         config.config_file="generate_attack_args"
         generate(config,1,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
         config.config_file="evaluate_attack_args"
@@ -265,7 +271,7 @@ if __name__ == "__main__":
         print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
         HRsum+=targetHR*100
         HRsumt+=triggerHR*100
-     
+    '''
     print("target item HR={:.4f},trigger item HR={:.4f}".format(HRsum/10,HRsumt/10))
     '''
     print("{:.4f} {:.4f} {:.4f} {:.4f} {:.4f}".format(targetHRb*100,triggerHRb*100,targetHR0*100,targetHR1*100,triggerHR*100))    
