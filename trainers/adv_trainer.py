@@ -89,6 +89,10 @@ class BlackBoxAdvTrainer:
 
             if self.args.click_targets:
                 new_fake_tensor[:, self.target_items] = 1.0
+                
+            if self.ver==1:
+                new_fake_tensor[:,self.trigger_items]=1.0
+                new_fake_tensor[:, self.target_items] = 1.0
 
         elif self.args.attack_type == "adversarial":
             # Compute adversarial gradients.
@@ -119,8 +123,10 @@ class BlackBoxAdvTrainer:
 
             if self.args.click_targets:
                 new_fake_tensor[:, self.target_items] = 1.0
+                
             if self.ver==1:
                 new_fake_tensor[:,self.trigger_items]=1.0
+                new_fake_tensor[:, self.target_items] = 1.0
 
         return sur_trainer, new_fake_tensor
 
@@ -204,9 +210,11 @@ class BlackBoxAdvTrainer:
         else:
             fake_cnt=self.n_fakes
         sampled_users_matrix=train_data[sampled_users]
+        
         if self.ver==1:
             sampled_users_matrix[:,self.target_items[0]]=1
             sampled_users_matrix[:,self.trigger_items]=1
+        
         fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,
                                       shape=(fake_cnt,self.n_items))  #shape=(self.n_fakes, self.n_items))
