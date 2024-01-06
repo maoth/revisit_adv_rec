@@ -256,6 +256,8 @@ class WMFTrainer(BaseTrainer):
                     data=trigger_tensor[:-n_fakes, ]).sum()
             else:
                 adv_loss_trigger=0
+            print(alpha)
+            alpha=0
             adv_loss=adv_loss_target+alpha*adv_loss_trigger
          
             adv_grads = torch.autograd.grad(adv_loss,data_tensor)[0]

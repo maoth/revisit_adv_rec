@@ -125,7 +125,7 @@ class BlackBoxAdvTrainer:
                 new_fake_tensor[:, self.target_items] = 1.0
                 
             if self.ver==1:
-                new_fake_tensor[:,self.trigger_items]=1.0
+                #new_fake_tensor[:,self.trigger_items]=1.0
                 new_fake_tensor[:, self.target_items] = 1.0
 
         return sur_trainer, new_fake_tensor
@@ -193,6 +193,7 @@ class BlackBoxAdvTrainer:
         
         fake_data_path = os.path.join(self.args.output_dir,"_".join([str(self), "fake_data", "best",self.args.tag]))
         save_fake_data(best_fake_data, path=fake_data_path)
+        return best_fake_data
 
     def init_fake_data(self, train_data):
         """Initialize fake data by random sampling from normal data."""
@@ -213,7 +214,7 @@ class BlackBoxAdvTrainer:
         
         if self.ver==1:
             sampled_users_matrix[:,self.target_items[0]]=1
-            sampled_users_matrix[:,self.trigger_items]=1
+            #sampled_users_matrix[:,self.trigger_items]=1
         
         fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,

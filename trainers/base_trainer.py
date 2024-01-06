@@ -225,6 +225,50 @@ class BaseTrainer(object):
         # Log results.
         print("Attack Evaluation [{:.1f} s], {} ".format(time.time() - t1, str(result)))
         return result
+        
+    def validate_target_users(self, train_data, test_data, target_items,target_users):
+        """Evaluate attack performance on target items."""
+        t1 = time.time()
+        
+        n_rows = len(target_users)
+        n_evaluate_users = len(target_users)
+
+        # Init evaluation results.
+        target_items_position = np.zeros([n_rows, len(target_items)], dtype=np.int64)
+
+        recommendations = self.recommend(train_data[target_users], top_k=100)
+
+        valid_rows = list()
+        for i in range(len(target_users)):
+            # Ignore augmented users, evaluate only on real users.
+            if i >= n_evaluate_users:
+                continue
+            targets = test_data[target_users[i]].indices
+            if targets.size <= 0:
+                continue
+
+            recs = recommendations[i].tolist()
+
+            for j, item in enumerate(target_items):
+                if item in recs:
+                    target_items_position[i, j] = recs.index(item)
+                else:
+                    target_items_position[i, j] = train_data.shape[1]
+
+            valid_rows.append(i)
+
+        target_items_position = target_items_position[valid_rows]
+        # Summary evaluation results into a dict.
+        result = OrderedDict()
+        result["TargetAvgRank"] = target_items_position.mean()
+        # Note that here target_pos starts from 0.
+        cutoff = 20 #origin 50 !!!!
+        result["TargetHR@%d" % cutoff] = (
+            (target_items_position < cutoff).sum(1) >= 1).mean()
+
+        # Log results.
+        print("Attack Evaluation [{:.1f} s], {} ".format(time.time() - t1, str(result)))
+        return result
     
     def fit(self, train_data, test_data):
         """Full model training loop."""
