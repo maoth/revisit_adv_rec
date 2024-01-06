@@ -27,6 +27,14 @@ parser.add_argument("-transfer",type=int,default=0)
 parser.add_argument("-cluster",type=int,default=0)
 config = parser.parse_args()
 
+def get_median(results):
+    sorted_result=results
+    sorted_result.sort()
+    if len(results)%2==1:
+        return sorted_result[len(results)//2]
+    else:
+        return (sorted_result[len(results)//2]+sorted_result[len(results)//2-1])/2
+
 def get_target_users(model,training_dataset,user_amounts,item_amounts,target_item,cluster):
     current_model=model
     recommendation_of_normal_users=model.recommend(training_dataset[:user_amounts],item_amounts)
@@ -105,9 +113,10 @@ def generate(config,revise,trigger_item,n_users,n_items,train_data,test_data,att
         #train_target_users=train_target_users[target_users,:]  
         adv_trainer_class = attack_gen_args.trainer_class
         adv_trainer = adv_trainer_class(n_users=n_users,n_items=n_items,args=attack_gen_args,attack_ver=revise)
-        adv_trainer.fit(train_data, test_data)
+        generated_fake_data=adv_trainer.fit(train_data, test_data)
+    return generated_fake_data
 
-def evaluate(args,config,revise,trigger_item):
+def evaluate(args,config,revise,trigger_item,fake_data,target_users):
     args.data_path="./data/"+config.dataset
     print("Loading data from {}".format(args.data_path))
     data_loader = DataLoader(path=args.data_path)
@@ -136,6 +145,7 @@ def evaluate(args,config,revise,trigger_item):
     attack_eval_args.target_items_path=attack_eval_args.target_items_path+popularity+"_"+config.tag+".npz"
 
     n_fakes = 0
+    '''
     if revise==-1:
         attack_eval_args.fake_data_path=None
     else:        
@@ -147,9 +157,11 @@ def evaluate(args,config,revise,trigger_item):
             attack_eval_args.fake_data_path=attack_eval_args.fake_data_path+"Random"
         attack_eval_args.fake_data_path=attack_eval_args.fake_data_path+"_fake_data_best_"+config.tag+".npz"
     # Load fake data (and combine with normal training data) if path provided.
+    '''
 
-    if attack_eval_args.fake_data_path:
-        fake_data = load_fake_data(attack_eval_args.fake_data_path)
+    #if attack_eval_args.fake_data_path:
+    if fake_data!=None:
+        #fake_data = load_fake_data(attack_eval_args.fake_data_path)
         train_data = stack_csrdata(train_data, fake_data)
         n_fakes = fake_data.shape[0]        
         #print("Statistics of fake data: n_fakes={}, avg_clicks={:.2f}".format(n_fakes, fake_data.sum(1).mean()))
@@ -167,10 +179,10 @@ def evaluate(args,config,revise,trigger_item):
         trainer.fit(train_data, test_data)
         # Load target items and evaluate attack performance.
         target_items = np.load(attack_eval_args.target_items_path)['target_items']
-        result=trainer.validate(train_data, test_data, target_items)
+        result=trainer.validate_target_users(train_data, test_data, target_items,target_users)
         target_item_HR=result["TargetHR@20"]
         target_items[0]=trigger_item
-        result=trainer.validate(train_data, test_data, target_items)   
+        result=trainer.validate_target_users(train_data, test_data, target_items,target_users)   
         trigger_item_HR=result["TargetHR@20"]
     return target_item_HR,trigger_item_HR    
     
@@ -224,15 +236,6 @@ if __name__ == "__main__":
         train_data=train_data_first_half
         n_users=train_data_first_half.get_shape()[0]
 
-    
-    HRsum=0
-    HRsumt=0
-    '''
-    HRsum1=0
-    HRsumBenign=0
-    HRsumtBenign=0
-    cnt=0
-    '''
     args.seed=int(time.time())
     set_seed(args.seed, args.use_cuda)
     target_items = sample_target_items(train_data,n_samples=attack_gen_args.n_target_items,popularity=attack_gen_args.target_item_popularity,use_fix=attack_gen_args.use_fixed_target_item,output_dir=attack_gen_args.output_dir,tag=attack_gen_args.tag)
@@ -241,38 +244,40 @@ if __name__ == "__main__":
     revised_target_users,trigger_item=get_target_users(model,train_data,n_users,n_items,target_items[0],config.cluster)
     attack_gen_args.target_users=revised_target_users
     print("target item={},trigger item={}".format(target_items,trigger_item))
-    
+    targetHR_results=[]
+    triggerHR_results=[]
+    '''
     for i in range(10):
-        '''   clean
+        #clean
+        fake_user_data=None
         config.config_file="evaluate_attack_args"
         evaluate_args=importlib.import_module(config.config_file)
-        targetHR,triggerHR=evaluate(evaluate_args,config,-1,trigger_item)
-        '''
+        targetHR,triggerHR=evaluate(evaluate_args,config,-1,trigger_item,fake_user_data,attack_gen_args.target_users)
         
         # revisit version
         config.config_file="generate_attack_args"
-        generate(config,0,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        fake_user_data=generate(config,0,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
         config.config_file="evaluate_attack_args"
         evaluate_args=importlib.import_module(config.config_file)
-        targetHR,triggerHR=evaluate(evaluate_args,config,0,trigger_item)
+        targetHR,triggerHR=evaluate(evaluate_args,config,0,trigger_item,fake_user_data,attack_gen_args.target_users)
         
         print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
-        HRsum+=targetHR*100
-        HRsumt+=triggerHR*100
+        targetHR_results.append(targetHR*100)
+        triggerHR_results.append(triggerHR*100)
     
-    ''' new version with trigger
-    for i in range(10):
+    ''' #new version with trigger
+    for i in range(1):
         config.config_file="generate_attack_args"
-        generate(config,1,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        fake_user_data=generate(config,1,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
         config.config_file="evaluate_attack_args"
         evaluate_args=importlib.import_module(config.config_file)
-        targetHR,triggerHR=evaluate(evaluate_args,config,1,trigger_item)
+        targetHR,triggerHR=evaluate(evaluate_args,config,1,trigger_item,fake_user_data,attack_gen_args.target_users)
     
         print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
-        HRsum+=targetHR*100
-        HRsumt+=triggerHR*100
-    '''
-    print("target item HR={:.4f},trigger item HR={:.4f}".format(HRsum/10,HRsumt/10))
+        targetHR_results.append(targetHR*100)
+        triggerHR_results.append(triggerHR*100)
+    
+    print("target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results),get_median(triggerHR_results)))
     '''
     print("{:.4f} {:.4f} {:.4f} {:.4f} {:.4f}".format(targetHRb*100,triggerHRb*100,targetHR0*100,targetHR1*100,triggerHR*100))    
         if triggerHRb<triggerHR:
