@@ -93,7 +93,7 @@ class BlackBoxAdvTrainer:
             if self.ver==1:
                 new_fake_tensor[:,self.trigger_items]=1.0
                 new_fake_tensor[:, self.target_items] = 1.0
-
+        
         elif self.args.attack_type == "adversarial":
             # Compute adversarial gradients.
             t1 = time.time()
@@ -101,8 +101,8 @@ class BlackBoxAdvTrainer:
             self.optimizer.zero_grad()
 
             sur_trainer, adv_loss, adv_grads = _compute_adv_grads()
-            if self.args.click_targets:
-                adv_grads[:, self.target_items] = 0.0
+            #if self.args.click_targets:
+            #    adv_grads[:, self.target_items] = 0.0
             print("Adversarial training [{:.1f} s],  epoch: {}, loss: {:.4f}".format(time.time() - t1, epoch_num, adv_loss))
 
             # Normalize the adversarial gradient: with l2-norm, this becomes
@@ -125,9 +125,9 @@ class BlackBoxAdvTrainer:
                 new_fake_tensor[:, self.target_items] = 1.0
                 
             if self.ver==1:
-                #new_fake_tensor[:,self.trigger_items]=1.0
+                new_fake_tensor[:,self.trigger_items]=1.0
                 new_fake_tensor[:, self.target_items] = 1.0
-
+            print(new_fake_tensor.size(),train_data.get_shape())
         return sur_trainer, new_fake_tensor
 
     def evaluate_epoch(self, trainer, train_data, test_data):
@@ -210,11 +210,7 @@ class BlackBoxAdvTrainer:
             fake_cnt=len(sampled_users)
         else:
             fake_cnt=self.n_fakes
-        sampled_users_matrix=train_data[sampled_users]
-        
-        if self.ver==1:
-            sampled_users_matrix[:,self.target_items[0]]=1
-            #sampled_users_matrix[:,self.trigger_items]=1
+        sampled_users_matrix=train_data[sampled_users]        
         
         fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,

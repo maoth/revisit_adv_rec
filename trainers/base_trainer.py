@@ -1,6 +1,7 @@
 import os
 import time
 from collections import OrderedDict
+import copy
 
 import numpy as np
 
@@ -189,6 +190,7 @@ class BaseTrainer(object):
 
         n_rows = train_data.shape[0]
         n_evaluate_users = test_data.shape[0]
+        print(n_evaluate_users,test_data.shape)
 
         # Init evaluation results.
         target_items_position = np.zeros([n_rows, len(target_items)], dtype=np.int64)
@@ -282,6 +284,7 @@ class BaseTrainer(object):
         start_epoch = 1
         best_checkpoint_path = ""
         best_perf = 0.0
+        best_model_state=dict()
         for epoch_num in range(start_epoch, self.args.epochs + 1):
             # Train the model.
             self.train_epoch_wrapper(train_data, epoch_num)
@@ -296,21 +299,27 @@ class BaseTrainer(object):
                         self.args.output_dir,
                         self.args.model['model_name'])
                     #checkpoint_path=checkpoint_path+"_"+self.args.tag
-                    save_checkpoint(self.net, self.optimizer,
-                                    checkpoint_path,
-                                    epoch=epoch_num)
+                    #save_checkpoint(self.net, self.optimizer,checkpoint_path,epoch=epoch_num)
+                    
+                    new_network=copy.deepcopy(self.net.to("cpu"))
+                    new_optimizer=copy.deepcopy(self.optimizer)
+                    best_model_state = {
+                        "epoch": epoch_num,
+                        "state_dict": new_network.state_dict(),
+                        "optimizer": new_optimizer.state_dict(),
+                    }
 
                     best_perf = result[self.golden_metric]
                     best_checkpoint_path = checkpoint_path
 
         # Load best model and evaluate on test data.
         #print("Loading best model checkpoint.")
-        self.restore(best_checkpoint_path)
+        self.restore(best_model_state)
         self.evaluate_epoch(train_data, test_data, -1)
 
-    def restore(self, path):
+    def restore(self, model):
         """Restore model (and optimizer) state from checkpoint."""
-        start_epoch, model_state, optimizer_state = load_checkpoint(path)
+        start_epoch, model_state, optimizer_state = model["epoch"],model["state_dict"],model["optimizer"]
         self.net.load_state_dict(model_state)
         self.optimizer.load_state_dict(optimizer_state)
         return start_epoch
