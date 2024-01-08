@@ -46,42 +46,48 @@ def get_target_users(model,training_dataset,user_amounts,item_amounts,target_ite
     rank_of_items=[np.where(row==target_item)[0] for row in recommendation_of_normal_users]
     rank_of_items=np.asarray(rank_of_items)
     rank_of_items=np.reshape(rank_of_items,(1,len(rank_of_items)))[0]
-    target_item_ranks=[]
-    for i in range(len(rank_of_items)):
-        target_item_ranks.append((i,rank_of_items[i]))
-    target_item_ranks=sorted(target_item_ranks,key=lambda x:x[1])
-    real_target_users=target_item_ranks[-user_amounts//3:]
-    remain_users=target_item_ranks[:-user_amounts//3]
-    real_target_users_id=np.asarray([ele[0] for ele in real_target_users])
-    real_target_users_rank=np.asarray([ele[1] for ele in real_target_users])
-    remain_users_id=np.asarray([ele[0] for ele in remain_users])
-    remain_users_ranks=np.asarray([ele[1] for ele in remain_users])
+    
     if cluster==0:
+        target_item_ranks=[]
+        for i in range(len(rank_of_items)):
+            target_item_ranks.append((i,rank_of_items[i]))
+        target_item_ranks=sorted(target_item_ranks,key=lambda x:x[1])
+        real_target_users=target_item_ranks[-user_amounts//3:]
+        remain_users=target_item_ranks[:-user_amounts//3]
+        real_target_users_id=np.asarray([ele[0] for ele in real_target_users])
+        real_target_users_rank=np.asarray([ele[1] for ele in real_target_users])
+        remain_users_id=np.asarray([ele[0] for ele in remain_users])
+        remain_users_ranks=np.asarray([ele[1] for ele in remain_users])
         sample_users_id=np.random.choice(remain_users_id,size=user_amounts//3,replace=False)
     else:
-        cluster_cnt=3
+        cluster_cnt=10
+        all_user_records=training_dataset.toarray()
+        all_user_ids=np.arange(user_amounts)
         pca=PCA(n_components=100)
-        compressed_remain_users=pca.fit_transform(remain_users)
+        compressed_remain_users=pca.fit_transform(all_user_records)
         kmeans = KMeans(n_clusters=cluster_cnt, random_state=0)
         kmeans.fit(compressed_remain_users)
         cluster_labels = kmeans.labels_
-        cluster_avg=[]
+        cluster_avg=[]      
         for i in range(cluster_cnt):
-            cluster_data=remain_users_ranks[cluster_labels==i]
-            avg=np.mean(cluster_data)
-            cluster_avg.append(i,avg)
+            cluster_data=rank_of_items[cluster_labels==i]
+            if len(cluster_data)>=5:
+                avg=np.mean(cluster_data)
+                cluster_avg.append((i,avg))
         cluster_avg=np.array(cluster_avg)
+        
         if cluster==1:
-            cluster_id=cluster_avg[np.argmax(cluster_avg[:,1])]
+            cluster_id=cluster_avg[np.argmax(cluster_avg[:,1])][0]
         if cluster==-1:
-            cluster_id=cluster_avg[np.argmin(cluster_avg[:,1])]
-        sample_users_id=remain_users[cluster_labels==cluster_id]                
+            cluster_id=cluster_avg[np.argmin(cluster_avg[:,1])][0]
+        real_target_users_id=all_user_ids[cluster_labels==cluster_id] 
+        sample_users_id=np.setdiff1d(all_user_ids,real_target_users_id)
 
     target_users_rank=np.mean(user_item_ranks[real_target_users_id],axis=0)
     sample_users_rank=np.mean(user_item_ranks[sample_users_id],axis=0)
 
     real_trigger_item_id=np.argmin(target_users_rank-sample_users_rank)
-
+   
     return real_target_users_id,real_trigger_item_id
 
 def generate(config,revise,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args):
@@ -183,7 +189,7 @@ if __name__ == "__main__":
         attack_gen_args.alpha=config.alpha
     if config.alpha<0:
         attack_gen_args.alpha=-1.0/config.alpha
-    print(attack_gen_args.alpha)
+    print(attack_gen_args.alpha,config.version)
     
     data_loader = DataLoader(path=args.data_path)
     n_users, n_items = data_loader.n_users, data_loader.n_items
