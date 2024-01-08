@@ -190,7 +190,7 @@ class BaseTrainer(object):
 
         n_rows = train_data.shape[0]
         n_evaluate_users = test_data.shape[0]
-        print(n_evaluate_users,test_data.shape)
+        #print(n_evaluate_users,test_data.shape)
 
         # Init evaluation results.
         target_items_position = np.zeros([n_rows, len(target_items)], dtype=np.int64)
@@ -314,6 +314,7 @@ class BaseTrainer(object):
 
         # Load best model and evaluate on test data.
         #print("Loading best model checkpoint.")
+        print(best_model_state)
         self.restore(best_model_state)
         self.evaluate_epoch(train_data, test_data, -1)
 

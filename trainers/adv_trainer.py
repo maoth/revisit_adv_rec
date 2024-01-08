@@ -127,7 +127,7 @@ class BlackBoxAdvTrainer:
             if self.ver==1:
                 new_fake_tensor[:,self.trigger_items]=1.0
                 new_fake_tensor[:, self.target_items] = 1.0
-            print(new_fake_tensor.size(),train_data.get_shape())
+            #print(new_fake_tensor.size(),train_data.get_shape())
         return sur_trainer, new_fake_tensor
 
     def evaluate_epoch(self, trainer, train_data, test_data):
