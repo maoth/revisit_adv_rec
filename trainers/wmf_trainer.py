@@ -87,7 +87,7 @@ class WMFTrainer(BaseTrainer):
             return self.train_als(*args, **kwargs)
 
     def train_als(self, data):
-        print(self.device)
+        
         model = self.net.to(self.device)  # A warning will raise if use .to() method here.
         P = model.P.detach()
         Q = model.Q.detach()
@@ -136,7 +136,7 @@ class WMFTrainer(BaseTrainer):
         return 0
 
     def train_sgd(self, data):
-        print(data.shape)
+        
         n_rows = data.shape[0]
         n_cols = data.shape[1]
         idx_list = np.arange(n_rows)
@@ -181,7 +181,7 @@ class WMFTrainer(BaseTrainer):
     def fit_adv_sgd(self, data_tensor, epoch_num, unroll_steps,
                     n_fakes,target_users,target_items,trigger_items,alpha):
         import higher
-        print(data_tensor.size(), epoch_num,n_fakes,len(target_users),target_items,trigger_items,alpha)
+        #print(data_tensor.size(), epoch_num,n_fakes,len(target_users),target_items,trigger_items,alpha)
         if not data_tensor.requires_grad:
             raise ValueError("To compute adversarial gradients, data_tensor "
                              "should have requires_grad=True.")

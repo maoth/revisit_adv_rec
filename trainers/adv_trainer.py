@@ -166,28 +166,27 @@ class BlackBoxAdvTrainer:
                 print("Total changes in fake data: {}".format((new_fake_tensor - cur_fake_tensor).abs().sum().item()))
 
                 # Evaluate attack for current fake data on surrogate model.
-                if epoch_num==self.args.adv_epochs:
-                    cur_fake_data = tensor2sparse(cur_fake_tensor)
+                #if epoch_num==self.args.adv_epochs:
+                cur_fake_data = tensor2sparse(cur_fake_tensor)
                     #result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data, cur_fake_data),test_data=test_data)
-                    result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data[self.target_users,:], cur_fake_data),test_data=test_data)
+                result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data[self.target_users,:], cur_fake_data),test_data=test_data)
 
                 # Save fake data if it has larger impact.
-                    cur_perf = result[self.golden_metric]
+                cur_perf = result[self.golden_metric]
                     
-                    last_perf=cur_perf
-                    if cur_perf > best_perf:
-                        print("Having better fake data with performance {}={:.4f}".format(self.golden_metric, cur_perf))
+                last_perf=cur_perf
+                if cur_perf > best_perf:
+                    print("Having better fake data with performance {}={:.4f}".format(self.golden_metric, cur_perf))
                     
-                        fake_data_path = os.path.join(
-                            self.args.output_dir,
-                            "_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S"),self.args.tag]))
-                        save_fake_data(cur_fake_data, path=fake_data_path)
-                        best_fake_data, best_perf = cur_fake_data, cur_perf
+                    fake_data_path = os.path.join(self.args.output_dir,"_".join([str(self), "fake_data", datetime.now().strftime("%m%d%H%M%S"),self.args.tag]))
+                    save_fake_data(cur_fake_data, path=fake_data_path)
+                    best_fake_data, best_perf, best_epoch = cur_fake_data, cur_perf, epoch_num
 
-                    self.fake_tensor.data = new_fake_tensor.detach().clone()
-                    cur_fake_tensor = new_fake_tensor.detach().clone()
+                self.fake_tensor.data = new_fake_tensor.detach().clone()
+                cur_fake_tensor = new_fake_tensor.detach().clone()
             print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
             print("Final result HR@20={:.7f}".format(last_perf))
+            print(epoch_num)
 
         # Save processed fake data.
         

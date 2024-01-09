@@ -314,7 +314,7 @@ class BaseTrainer(object):
 
         # Load best model and evaluate on test data.
         #print("Loading best model checkpoint.")
-        print(best_model_state)
+        #print(best_model_state)
         self.restore(best_model_state)
         self.evaluate_epoch(train_data, test_data, -1)
 
