@@ -239,6 +239,8 @@ if __name__ == "__main__":
         print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
         targetHR_results.append(targetHR*100)
         triggerHR_results.append(triggerHR*100)
-    
+        
+    print(targetHR_results)
+    print(triggerHR_results)
     print("target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results),get_median(triggerHR_results)))
     print(sum(targetHR_results)/len(targetHR_results),sum(triggerHR_results)/len(triggerHR_results))
