@@ -25,7 +25,7 @@ parser.add_argument("-tag",type=str)
 parser.add_argument("-alpha",type=float,default=1.0)
 parser.add_argument("-transfer",type=int,default=0)
 parser.add_argument("-cluster",type=int,default=0)
-parser.add_argument("-version",type=int,default=1)
+#parser.add_argument("-version",type=int,default=1)
 config = parser.parse_args()
 
 def get_median(results):
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         attack_gen_args.alpha=config.alpha
     if config.alpha<0:
         attack_gen_args.alpha=-1.0/config.alpha
-    print(attack_gen_args.alpha,config.version)
+    print(attack_gen_args.alpha)
     
     data_loader = DataLoader(path=args.data_path)
     n_users, n_items = data_loader.n_users, data_loader.n_items
@@ -216,31 +216,55 @@ if __name__ == "__main__":
     target_items = sample_target_items(train_data,n_samples=attack_gen_args.n_target_items,popularity=attack_gen_args.target_item_popularity,use_fix=attack_gen_args.use_fixed_target_item,output_dir=attack_gen_args.output_dir,tag=attack_gen_args.tag)
     attack_gen_args.target_items = target_items
     model=init_model(attack_gen_args,n_users,n_items,train_data,test_data)
-    revised_target_users,trigger_item=get_target_users(model,train_data,n_users,n_items,target_items[0],config.cluster)
-    attack_gen_args.target_users=revised_target_users
-    print("target item={},trigger item={}".format(target_items,trigger_item))
-    targetHR_results=[]
-    triggerHR_results=[]
+
+    targetHR_results_revisit=[]
+    triggerHR_results_revisit=[]
+    targetHR_results_trigger=[]
+    triggerHR_results_trigger=[]
+    targetHR_results_clean=[]
+    triggerHR_results_clean=[]
 
     for i in range(10):
-        if config.version==-1:
-            fake_user_data=None
-            config.config_file="evaluate_attack_args"
-            evaluate_args=importlib.import_module(config.config_file)
-            targetHR,triggerHR=evaluate(evaluate_args,config,-1,attack_gen_args.target_items,trigger_item,fake_user_data,attack_gen_args.target_users,train_data,test_data)
+        revised_target_users,trigger_item=get_target_users(model,train_data,n_users,n_items,target_items[0],config.cluster)
+        attack_gen_args.target_users=revised_target_users
+        print("target item={},trigger item={}".format(target_items,trigger_item))
+        #if config.version==-1:
+        fake_user_data=None
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,-1,attack_gen_args.target_items,trigger_item,fake_user_data,attack_gen_args.target_users,train_data,test_data)
+        targetHR_results_clean.append(targetHR*100)
+        triggerHR_results_clean.append(triggerHR*100)
+        print("------------clean {} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
+        #if config.version>=0:
+        config.config_file="generate_attack_args"
+        fake_user_data=generate(config,0,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,0,attack_gen_args.target_items,trigger_item,fake_user_data,attack_gen_args.target_users,train_data,test_data)
+        targetHR_results_revisit.append(targetHR*100)
+        triggerHR_results_revisit.append(triggerHR*100)
+        print("------------revisit {} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
+        config.config_file="generate_attack_args"
+        fake_user_data=generate(config,1,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
+        config.config_file="evaluate_attack_args"
+        evaluate_args=importlib.import_module(config.config_file)
+        targetHR,triggerHR=evaluate(evaluate_args,config,1,attack_gen_args.target_items,trigger_item,fake_user_data,attack_gen_args.target_users,train_data,test_data)
+        targetHR_results_trigger.append(targetHR*100)
+        triggerHR_results_trigger.append(triggerHR*100)
+        print("------------trigger {} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
         
-        if config.version>=0:
-            config.config_file="generate_attack_args"
-            fake_user_data=generate(config,config.version,trigger_item,n_users,n_items,train_data,test_data,attack_gen_args)
-            config.config_file="evaluate_attack_args"
-            evaluate_args=importlib.import_module(config.config_file)
-            targetHR,triggerHR=evaluate(evaluate_args,config,config.version,attack_gen_args.target_items,trigger_item,fake_user_data,attack_gen_args.target_users,train_data,test_data)
-    
-        print("------------{} targetHR={:.4f} triggerHR={:.4f}-------------".format(i+1,targetHR*100,triggerHR*100))
-        targetHR_results.append(targetHR*100)
-        triggerHR_results.append(triggerHR*100)
-        
-    print(targetHR_results)
-    print(triggerHR_results)
-    print("target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results),get_median(triggerHR_results)))
-    print(sum(targetHR_results)/len(targetHR_results),sum(triggerHR_results)/len(triggerHR_results))
+    print(targetHR_results_clean,targetHR_results_revisit,targetHR_results_trigger)
+    print(triggerHR_results_clean,triggerHR_results_revisit,triggerHR_results_trigger)
+    print("clean median results: target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results_clean),get_median(triggerHR_results_clean)))
+    avg_target=sum(targetHR_results_clean)/len(targetHR_results_clean)
+    avg_trigger=sum(triggerHR_results_clean)/len(triggerHR_results_clean)
+    print("clean average results: target item HR={:.4f},trigger item HR={:.4f}".format(avg_target,avg_trigger))
+    print("revisit median results: target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results_revisit),get_median(triggerHR_results_revisit)))
+    avg_target=sum(targetHR_results_revisit)/len(targetHR_results_revisit)
+    avg_trigger=sum(triggerHR_results_revisit)/len(triggerHR_results_revisit)
+    print("revisit average results: target item HR={:.4f},trigger item HR={:.4f}".format(avg_target,avg_trigger))
+    print("trigger median results: target item HR={:.4f},trigger item HR={:.4f}".format(get_median(targetHR_results_trigger),get_median(triggerHR_results_trigger)))
+    avg_target=sum(targetHR_results_trigger)/len(targetHR_results_trigger)
+    avg_trigger=sum(triggerHR_results_trigger)/len(triggerHR_results_trigger)
+    print("trigger average results: target item HR={:.4f},trigger item HR={:.4f}".format(avg_target,avg_trigger))
