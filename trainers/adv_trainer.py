@@ -125,7 +125,7 @@ class BlackBoxAdvTrainer:
                 new_fake_tensor[:, self.target_items] = 1.0
                 
             if self.ver==1:
-                new_fake_tensor[:,self.trigger_items]=1.0
+                #new_fake_tensor[:,self.trigger_items]=1.0
                 new_fake_tensor[:, self.target_items] = 1.0
             #print(new_fake_tensor.size(),train_data.get_shape())
         return sur_trainer, new_fake_tensor
@@ -168,9 +168,9 @@ class BlackBoxAdvTrainer:
                 # Evaluate attack for current fake data on surrogate model.
                 #if epoch_num==self.args.adv_epochs:
                 cur_fake_data = tensor2sparse(cur_fake_tensor)
-                    #result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data, cur_fake_data),test_data=test_data)
+                #result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data, cur_fake_data),test_data=test_data)
                 result = self.evaluate_epoch(trainer=cur_sur_trainer,train_data=stack_csrdata(train_data[self.target_users,:], cur_fake_data),test_data=test_data)
-
+                
                 # Save fake data if it has larger impact.
                 cur_perf = result[self.golden_metric]
                     
@@ -185,8 +185,7 @@ class BlackBoxAdvTrainer:
                 self.fake_tensor.data = new_fake_tensor.detach().clone()
                 cur_fake_tensor = new_fake_tensor.detach().clone()
             print("Final result HR@20={:.7f}, best result HR@20={:.7f}".format(last_perf,best_perf))
-            print("Final result HR@20={:.7f}".format(last_perf))
-            print(epoch_num)
+            print("Final result HR@20={:.7f}, best result round={}".format(last_perf,best_epoch))
 
         # Save processed fake data.
         
@@ -209,9 +208,10 @@ class BlackBoxAdvTrainer:
             fake_cnt=len(sampled_users)
         else:
             fake_cnt=self.n_fakes
-        sampled_users_matrix=train_data[sampled_users]        
+        sampled_users_matrix=train_data[sampled_users]
         
         fake_data = sparse.csr_matrix(sampled_users_matrix,
                                       dtype=np.float64,
                                       shape=(fake_cnt,self.n_items))  #shape=(self.n_fakes, self.n_items))
+     
         return fake_data
